@@ -1,25 +1,64 @@
+import {
+  Container,
+  Divider,
+  FormControlLabel,
+  Switch,
+  Typography,
+} from '@mui/material';
 import React from 'react';
-import logo from '../../assets/img/logo.svg';
-import Greetings from '../../containers/Greetings/Greetings';
+import { useExtensionConfig } from '../../hooks/extensionConfig';
 import './Popup.css';
+import AuthStatus from '../../components/AuthStatus';
+import EthGasTracker from '../../components/gasTrackers/EthGasTracker';
+import { useMoralis } from 'react-moralis';
+import PriceTracker from '../../components/gasTrackers/PriceTracker';
 
 const Popup = () => {
+  const [extensionConfig, setExtensionConfig] = useExtensionConfig();
+  const { isAuthenticated } = useMoralis();
+
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/pages/Popup/Popup.jsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React!
-        </a>
-      </header>
+      <AuthStatus />
+
+      {extensionConfig && (
+        <div className="App-header">
+          <FormControlLabel
+            control={<Switch checked={extensionConfig.enabled} />}
+            label="Allow Rarity Laser to inject into OpenSea web pages."
+            onChange={(event) => {
+              setExtensionConfig({
+                ...extensionConfig,
+                enabled: event.target.checked,
+              });
+            }}
+          />
+        </div>
+      )}
+
+      <Divider sx={{ borderColor: '#9AB37F', marginTop: '4px' }} />
+
+      <Container>
+        <Typography sx={{ color: '#9AB37F' }} variant="subtitle2">
+          PRICES TRACKER
+        </Typography>
+        <PriceTracker />
+      </Container>
+
+      <Divider sx={{ borderColor: '#9AB37F', marginTop: '4px' }} />
+
+      <Container>
+        <Typography sx={{ color: '#9AB37F' }} variant="subtitle2">
+          ETH GAS TRACKER
+        </Typography>
+        {isAuthenticated ? (
+          <EthGasTracker />
+        ) : (
+          <Typography variant="caption" color="white">
+            Please login to view Gas tracker
+          </Typography>
+        )}
+      </Container>
     </div>
   );
 };
