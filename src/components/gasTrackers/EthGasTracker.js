@@ -44,7 +44,7 @@ const EthGasTracker = () => {
   const [progress, setProgress] = useState(0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [currency, setCurrency] = useState('EUR');
+  const [currency, setCurrency] = useState('USD');
 
   const { isInitialized } = useMoralis();
   const Web3Api = useMoralisWeb3Api();

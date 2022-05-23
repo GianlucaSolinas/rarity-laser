@@ -8,7 +8,7 @@ import _ from 'lodash';
 import {
   fetchCollectionSlug,
   fetchCollectionSub,
-  getRarityOverview,
+  // getRarityOverview,
 } from '../../hooks/utils';
 import Moralis from 'moralis';
 import CollectionStats from '../../components/CollectionStats';
@@ -44,7 +44,7 @@ const injectReact = (content, target, opts) => {
 //   });
 // };
 
-const assetInfoRenderer = async (openSeaCollection, rarityOverview) => {
+const assetInfoRenderer = async (openSeaCollection) => {
   const render = () => {
     try {
       const selectedNodes = document.querySelectorAll(
@@ -73,7 +73,6 @@ const assetInfoRenderer = async (openSeaCollection, rarityOverview) => {
               {...props}
               collectionObject={collectionObject}
               openSeaCollection={openSeaCollection}
-              rarityOverview={rarityOverview}
               type={type}
               parentNode={node}
             />,
@@ -117,6 +116,7 @@ const refreshAssetInfo = () => {
         collectionObject={collectionObject}
         openSeaCollection={openSeaCollection}
         type={node.dataset['type']}
+        refresh={true}
       />,
       node
     );
@@ -285,8 +285,6 @@ const throttledSetupProfileInfo = _.throttle(setupProfileInfo, 500);
 
 // window.addEventListener('message', async (event) => {
 //   if (event.origin !== 'https://opensea.io') return;
-//   if (event.data.method === 'RarityLaserBidBuy') {
-//   }
 // });
 
 const setupInjections = async () => {
@@ -294,17 +292,17 @@ const setupInjections = async () => {
     const splitLink = window.location.pathname.split('/');
 
     let openSeaCollection = null;
-    let rarityOverview = null;
+    // let rarityOverview = null;
 
     if (splitLink[1] === 'collection') {
       openSeaCollection = await fetchOpenSeaCollection(splitLink[2]);
-      rarityOverview = await getRarityOverview(openSeaCollection);
+      // rarityOverview = await getRarityOverview(openSeaCollection);
     }
 
-    throttledSetupAssetInfo(openSeaCollection, rarityOverview);
-    throttledInjectAssetInfo(openSeaCollection, rarityOverview);
-    throttledRefreshAssetInfo(openSeaCollection, rarityOverview);
-    throttledInjectCollectionStats(openSeaCollection, rarityOverview);
+    throttledSetupAssetInfo(openSeaCollection);
+    throttledInjectAssetInfo(openSeaCollection);
+    throttledRefreshAssetInfo(openSeaCollection);
+    throttledInjectCollectionStats(openSeaCollection);
 
     throttledSetupProfileInfo();
     throttledBundleVerification();

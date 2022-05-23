@@ -152,6 +152,7 @@ export const floorPriceLoader = new DataLoader(
     const { stats } = await fetch(
       `https://api.opensea.io/api/v1/collection/${slug}/stats`
     ).then((res) => res.json());
+    console.log(`stats for ${slug}`, stats);
     return [
       {
         price: Math.round(stats.floor_price * 10000) / 10000,
@@ -174,7 +175,24 @@ const shortenAddress = (address) => {
 };
 
 const getRarityOverview = async (openSeaCollection) => {
-  const collectionTotalTraits = openSeaCollection.traits;
+  const totalItemsCount = openSeaCollection.stats.count;
+  const collectionTotalTraits = Object.entries(openSeaCollection.traits).reduce(
+    (acc, [traitKey, traitObject]) => {
+      const totalWithTrait = Object.values(traitObject).reduce(
+        (totalN, thisTotal) => totalN + thisTotal,
+        0
+      );
+
+      acc[traitKey] = {
+        ...traitObject,
+        __empty__: totalItemsCount - totalWithTrait,
+      };
+
+      return acc;
+    },
+    {}
+  );
+
   const rarestCombination = Object.entries(collectionTotalTraits).reduce(
     (acc, [trait_key, traitObject]) => {
       const sortedByRarity = Object.entries(traitObject)
@@ -203,6 +221,14 @@ const getRarityOverview = async (openSeaCollection) => {
   };
 };
 
+const slugify = (str) => {
+  return String(str).toLowerCase().replace(/\s+/g, '-');
+};
+
+const capitalize = (str) => {
+  return String(str).replace(/\b\w/g, (l) => l.toUpperCase());
+};
+
 export {
   formatNumber,
   fetchCollectionSlug,
@@ -214,4 +240,6 @@ export {
   fetchFloorPrice,
   shortenAddress,
   getRarityOverview,
+  slugify,
+  capitalize,
 };

@@ -2,31 +2,38 @@ import {
   Container,
   Divider,
   FormControlLabel,
+  Snackbar,
   Switch,
   Typography,
 } from '@mui/material';
-import React from 'react';
+import React, { useState } from 'react';
 import { useExtensionConfig } from '../../hooks/extensionConfig';
 import './Popup.css';
-import AuthStatus from '../../components/AuthStatus';
+// import AuthStatus from '../../components/AuthStatus';
 import EthGasTracker from '../../components/gasTrackers/EthGasTracker';
-import { useMoralis } from 'react-moralis';
+// import { useMoralis } from 'react-moralis';
 import PriceTracker from '../../components/gasTrackers/PriceTracker';
 
 const Popup = () => {
   const [extensionConfig, setExtensionConfig] = useExtensionConfig();
-  const { isAuthenticated } = useMoralis();
+  // const { isAuthenticated } = useMoralis();
+  const [showSnackbar, setShowSnackbar] = useState(false);
 
   return (
     <div className="App">
-      <AuthStatus />
+      {/* <AuthStatus /> */}
 
       {extensionConfig && (
         <div className="App-header">
           <FormControlLabel
-            control={<Switch checked={extensionConfig.enabled} />}
-            label="Allow Rarity Laser to inject into OpenSea web pages."
+            control={<Switch size="small" checked={extensionConfig.enabled} />}
+            label={
+              <Typography variant="caption">
+                Allow Rarity Laser to inject into OpenSea
+              </Typography>
+            }
             onChange={(event) => {
+              setShowSnackbar(true);
               setExtensionConfig({
                 ...extensionConfig,
                 enabled: event.target.checked,
@@ -51,14 +58,17 @@ const Popup = () => {
         <Typography sx={{ color: '#9AB37F' }} variant="subtitle2">
           ETH GAS TRACKER
         </Typography>
-        {isAuthenticated ? (
-          <EthGasTracker />
-        ) : (
-          <Typography variant="caption" color="white">
-            Please login to view Gas tracker
-          </Typography>
-        )}
+        <EthGasTracker />
       </Container>
+
+      <Snackbar
+        open={showSnackbar}
+        autoHideDuration={2000}
+        onClose={() => {
+          setShowSnackbar(false);
+        }}
+        message="Refresh all Opensea pages to apply changes."
+      />
     </div>
   );
 };

@@ -4,7 +4,7 @@ import { grey, orange } from '@mui/material/colors';
 const theme = createTheme({
   palette: {
     primary: { main: orange[700] },
-    secondary: { main: grey[500] },
+    secondary: { main: grey[500], light: grey[300] },
     background: {
       default: '#282C34',
       paper: '#282C34',
@@ -29,6 +29,20 @@ const theme = createTheme({
     ].join(','),
   },
   components: {
+    MuiCssBaseline: {
+      styleOverrides: {
+        '*::-webkit-scrollbar': {
+          width: '4px',
+        },
+        '*::-webkit-scrollbar-track': {
+          background: grey[200],
+        },
+        '*::-webkit-scrollbar-thumb': {
+          background: orange[800],
+          borderRadius: '2px',
+        },
+      },
+    },
     MuiTableCell: {
       styleOverrides: {
         root: {

@@ -1,5 +1,4 @@
 import DataLoader from 'dataloader';
-import Moralis from 'moralis';
 
 const chainMapNames = {
   ethereum: 'eth',

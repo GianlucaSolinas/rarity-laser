@@ -1,8 +1,9 @@
-import { Button } from '@mui/material';
+import { Box, Button } from '@mui/material';
 import React, { useEffect } from 'react';
 import Moralis from 'moralis';
 import { useMoralis } from 'react-moralis';
 import createMetaMaskProvider from 'metamask-extension-provider';
+import { LoginOutlined } from '@mui/icons-material';
 
 class customConnector extends Moralis.AbstractWeb3Connector {
   async activate() {
@@ -68,15 +69,21 @@ const AuthStatus = () => {
   };
 
   return (
-    <div style={{ color: 'white' }}>
+    <Box mb={2} style={{ color: 'white' }}>
       {user ? (
         <div>
           User logged in - <Button onClick={logOut}>Logout</Button>
         </div>
       ) : (
-        <Button onClick={loginWithMetamask}>Login with Metamask</Button>
+        <Button
+          variant="contained"
+          startIcon={<LoginOutlined />}
+          onClick={loginWithMetamask}
+        >
+          Login with Metamask
+        </Button>
       )}
-    </div>
+    </Box>
   );
 };
 

@@ -1,9 +1,21 @@
+import { TableView } from '@mui/icons-material';
 import {
+  Avatar,
   Box,
   Button,
+  Chip,
+  Dialog,
+  DialogContent,
+  DialogTitle,
   LinearProgress,
   Paper,
   Stack,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
   Typography,
 } from '@mui/material';
 import { grey } from '@mui/material/colors';
@@ -28,7 +40,9 @@ const ProfileInfo = ({ shortenedAddress }) => {
   });
   const [collectionsBreakdown, setCollections] = useState([]);
   const [floorTotal, setFloorTotal] = useState(0);
+  const [floorTotalUnique, setFloorTotalUnique] = useState(0);
   const [totalItems, setTotalItems] = useState(0);
+  const [showBreakdownDialog, setShowBreakdownDialog] = useState(false);
 
   const calculate = async () => {
     setActive(true);
@@ -44,11 +58,19 @@ const ProfileInfo = ({ shortenedAddress }) => {
 
     if (!address) return;
 
-    const collections = await fetchAllCollectionsForUser(address);
+    // const res = await (
+    //   await fetch(
+    //     `https://api.covalenthq.com/v1/1/address/${address}/balances_v2/?key=ckey_e53411317f40450b8b679520247`
+    //   )
+    // ).json();
 
+    // console.log('res balance', res);
+    const collections = await fetchAllCollectionsForUser(address);
     await Promise.all(
       collections.map(async ({ slug, name, image, ownedCount }) => {
         const floor = await fetchFloorPrice(slug);
+        console.log('floor', collections);
+        setFloorTotalUnique((total) => total + floor.price);
         setFloorTotal((total) => total + floor.price * ownedCount);
         setTotalItems((prev) => prev + ownedCount);
         setCollections((floorBreakdown) => [
@@ -71,16 +93,13 @@ const ProfileInfo = ({ shortenedAddress }) => {
   return (
     <Paper sx={{ textAlign: 'center', padding: '16px', marginTop: '16px' }}>
       <Stack gap={2} direction="column">
-        <Box>
-          <Button
-            disabled={progress.loading || active}
-            size="small"
-            variant="contained"
-            onClick={calculate}
-          >
-            Calculate profile value
-          </Button>
-        </Box>
+        {!active && (
+          <Stack direction="row">
+            <Button size="small" variant="contained" onClick={calculate}>
+              Calculate profile value
+            </Button>
+          </Stack>
+        )}
         {progress.loading && (
           <Stack
             direction="column"
@@ -108,7 +127,7 @@ const ProfileInfo = ({ shortenedAddress }) => {
                 variant="subtitle1"
                 fontFamily="Poppins"
               >
-                Floor total
+                Total floor
               </Typography>
               <Typography
                 variant="h6"
@@ -139,7 +158,7 @@ const ProfileInfo = ({ shortenedAddress }) => {
                 <EthIcon />
                 {progress.numLoaded
                   ? numberWithCommas(
-                      formatNumber(floorTotal / progress.numLoaded)
+                      formatNumber(floorTotalUnique / progress.numLoaded)
                     )
                   : '---'}
               </Typography>
@@ -163,13 +182,75 @@ const ProfileInfo = ({ shortenedAddress }) => {
                   : '---'}
               </Typography>
             </Box>
-            {/* <ul>
-            {collectionsBreakdown.map((coll) => {
-              return <div>{coll.name}</div>;
-            })}
-          </ul> */}
           </Stack>
         )}
+
+        {progress.complete && (
+          <Stack direction="row">
+            <Button
+              startIcon={<TableView />}
+              variant="contained"
+              onClick={() => {
+                setShowBreakdownDialog(true);
+              }}
+            >
+              Show breakdown
+            </Button>
+          </Stack>
+        )}
+
+        <Dialog
+          open={showBreakdownDialog}
+          onClose={() => {
+            setShowBreakdownDialog(false);
+          }}
+        >
+          <DialogTitle>Collections breakdown</DialogTitle>
+          <DialogContent>
+            <TableContainer>
+              <Table>
+                <TableHead>
+                  <TableCell>Collection</TableCell>
+                  <TableCell>Floor price</TableCell>
+                  <TableCell>Owned</TableCell>
+                  <TableCell>Total floor</TableCell>
+                </TableHead>
+                <TableBody>
+                  {collectionsBreakdown.map((coll) => {
+                    //name, slug, image, floor: floor.price, ownedCount
+                    return (
+                      <TableRow>
+                        <TableCell>
+                          <Chip
+                            variant="outlined"
+                            component="a"
+                            clickable
+                            target="_blank"
+                            href={`https://opensea.io/collection/${coll.slug}`}
+                            avatar={<Avatar alt={coll.name} src={coll.image} />}
+                            label={coll.name}
+                          >
+                            {coll.name}
+                          </Chip>
+                        </TableCell>
+                        <TableCell>
+                          <EthIcon /> {coll.floor}
+                        </TableCell>
+                        <TableCell>x{coll.ownedCount}</TableCell>
+                        <TableCell>
+                          <EthIcon />
+                          {numberWithCommas(
+                            formatNumber(coll.ownedCount * coll.floor)
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </DialogContent>
+        </Dialog>
       </Stack>
     </Paper>
   );
