@@ -1,16 +1,5 @@
 import { PriceChange } from '@mui/icons-material';
-import {
-  Paper,
-  Skeleton,
-  Stack,
-  Tooltip,
-  Typography,
-  Button,
-  Dialog,
-  DialogContent,
-  DialogTitle,
-  ButtonGroup,
-} from '@mui/material';
+import { Paper, Skeleton, Stack, Tooltip, Typography } from '@mui/material';
 import React, { useEffect, useState } from 'react';
 import { useMoralisWeb3Api } from 'react-moralis';
 import { formatNumber, numberWithCommas } from '../../hooks/utils';
