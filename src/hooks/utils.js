@@ -152,7 +152,6 @@ export const floorPriceLoader = new DataLoader(
     const { stats } = await fetch(
       `https://api.opensea.io/api/v1/collection/${slug}/stats`
     ).then((res) => res.json());
-    console.log(`stats for ${slug}`, stats);
     return [
       {
         price: Math.round(stats.floor_price * 10000) / 10000,

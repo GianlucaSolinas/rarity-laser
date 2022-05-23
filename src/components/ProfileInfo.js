@@ -69,7 +69,6 @@ const ProfileInfo = ({ shortenedAddress }) => {
     await Promise.all(
       collections.map(async ({ slug, name, image, ownedCount }) => {
         const floor = await fetchFloorPrice(slug);
-        console.log('floor', collections);
         setFloorTotalUnique((total) => total + floor.price);
         setFloorTotal((total) => total + floor.price * ownedCount);
         setTotalItems((prev) => prev + ownedCount);

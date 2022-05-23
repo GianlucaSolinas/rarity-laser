@@ -140,7 +140,6 @@ const HistoricalChart = ({ collectionObject, onClose }) => {
 
   useEffect(() => {
     if (datahistory) {
-      console.log('datahistory', datahistory);
       if (chartInstance) {
         chartInstance.data.datasets = getDatasets();
         chartInstance.update();
@@ -308,7 +307,6 @@ const HistoricalChart = ({ collectionObject, onClose }) => {
       };
 
       if (chartInstance) {
-        console.log('chouls update chart');
         chartInstance.update(optionsObject);
       } else {
         const newChartInstance = new Chart(canvasRef.current, optionsObject);

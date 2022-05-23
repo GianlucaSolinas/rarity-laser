@@ -176,7 +176,6 @@ const injectBundleVerification = () => {
     document.querySelectorAll('.Bundle--summary-frame')
   );
 
-  console.log('bundleFrames', bundleFrames);
   bundleFrames.forEach((bundleFrame) => {
     if (!bundleFrame || bundleFrame.dataset[RENDERED_KEY]) return;
 
@@ -210,7 +209,7 @@ const injectBundleVerification = () => {
 
 const setupProfileInfo = async () => {
   if (document.querySelector('.ProfileInfo--rendered')) {
-    console.log('found ProfileInfo--rendered');
+    // console.log('found ProfileInfo--rendered');
   } else {
     const addressLinkElement = document.querySelector(
       '.AccountHeader--address'
@@ -346,7 +345,7 @@ const initialize = async () => {
 
     setupInjections();
   } else {
-    console.log('REMOVE INJECTIONS');
+    // console.log('REMOVE INJECTIONS');
   }
 };
 

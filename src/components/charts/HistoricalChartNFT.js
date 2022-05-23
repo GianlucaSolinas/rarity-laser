@@ -45,13 +45,10 @@ const HistoricalChartNFT = ({ address, token_id }) => {
       )
     ).json();
 
-    console.log('data', data);
-
     if (error) {
       console.log(error);
       setLoading(false);
     } else {
-      console.log('data', data);
       setDataHistory(data.items);
       setLoading(false);
     }
@@ -341,7 +338,6 @@ const HistoricalChartNFT = ({ address, token_id }) => {
       };
 
       if (chartInstance) {
-        console.log('chouls update chart');
         chartInstance.update(optionsObject);
       } else {
         const newChartInstance = new Chart(canvasRef.current, optionsObject);

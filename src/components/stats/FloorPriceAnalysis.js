@@ -30,8 +30,6 @@ const FloorPriceAnalysis = ({ collectionObject }) => {
       setLoadingTrend(true);
 
       fetchNFTLowestPrice(options).then((res) => {
-        console.log('res', res);
-
         const changeCount =
           formatNumber(Moralis.Units.FromWei(res.price)) - floorPrice;
 
