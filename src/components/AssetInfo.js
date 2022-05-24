@@ -5,9 +5,8 @@ import {
   Stack,
   Dialog,
   Paper,
-  Typography,
 } from '@mui/material';
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { clearCollectionSub } from '../hooks/utils';
 import { useMoralisCloudFunction } from 'react-moralis';
 
@@ -20,6 +19,7 @@ import { BarChart } from '@mui/icons-material';
 const AssetInfo = ({
   address,
   token_id,
+  price,
   collectionObject,
   type,
   openSeaCollection,
@@ -28,6 +28,7 @@ const AssetInfo = ({
   const [error, setError] = useState(null);
   const [currentToast, setToast] = useState({ open: false, message: '' });
   const [dialogOpen, setDialogOpen] = useState(null);
+
   // const [instantRarity, setInstantRarity] = useState(null);
   // const [rarityPosition, setRarityPosition] = useState(null);
 
@@ -211,6 +212,7 @@ const AssetInfo = ({
           address={address}
           token_id={token_id}
           refresh={refresh}
+          price={price}
           // instantRarity={instantRarity}
         />
       </Stack>
@@ -225,7 +227,7 @@ const AssetInfo = ({
               setDialogOpen(true);
             }}
           >
-            item transactions history
+            item history
           </Button>
         </div>
         {/* <div>

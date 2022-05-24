@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Chip,
   ClickAwayListener,
@@ -10,6 +10,7 @@ import {
   TableRow,
   Tooltip,
   Typography,
+  CircularProgress,
   LinearProgress,
   TablePagination,
   Stack,
@@ -20,20 +21,39 @@ import TraitTableTooltip from './TraitTableTooltip';
 import StarIcon from '@mui/icons-material/Star';
 import TimelineIcon from '@mui/icons-material/Timeline';
 import DiamondIcon from '@mui/icons-material/Diamond';
-import { formatNumber } from '../hooks/utils';
+import { formatNumber, numberWithCommas } from '../hooks/utils';
 import { orange } from '@mui/material/colors';
 
-const TokenRanked = ({ address, token_id, refresh }) => {
+const TokenRanked = ({ address, token_id, refresh, price }) => {
   const params = new URL(window.document.location).searchParams;
   const isActivityTab = params.get('tab') === 'activity';
 
   const [isTraitTableOpen, setTraitTableOpen] = useState(false);
-  const [page, setPage] = React.useState(0);
+  const [page, setPage] = useState(0);
+  const [priceLoading, setPriceLoading] = useState(false);
+  const [spotPrice, setSpotPrice] = useState(null);
+
   const rowsPerPage = 5;
 
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
   };
+
+  const convertPrice = useCallback(async () => {
+    setPriceLoading(true);
+    const { data } = await (
+      await fetch(`https://api.coinbase.com/v2/prices/ETH-USD/spot`)
+    ).json();
+
+    setPriceLoading(false);
+    setSpotPrice(data.amount * price);
+  }, [price]);
+
+  useEffect(() => {
+    if (price) {
+      convertPrice();
+    }
+  }, [price, convertPrice]);
 
   const {
     data,
@@ -61,10 +81,6 @@ const TokenRanked = ({ address, token_id, refresh }) => {
     );
   }
 
-  if (!token) {
-    return '';
-  }
-
   return (
     <Stack mb={1} direction="column" gap={1}>
       <Stack
@@ -90,7 +106,7 @@ const TokenRanked = ({ address, token_id, refresh }) => {
                   )})`}
                 </div>
               ) : (
-                'Click to request ranking - Members only'
+                'Ranking not available'
               )
             }
           >
@@ -103,34 +119,38 @@ const TokenRanked = ({ address, token_id, refresh }) => {
                 </Typography>
               )}
               {isLoading && 'Loading rank...'}
-              {token && (
-                <Typography
-                  variant="body1"
-                  color="primary"
-                  fontWeight="bold"
-                  fontFamily="Lato"
-                >
-                  # {token.rank}
-                </Typography>
-              )}
-              {!isLoading && token === null && <div>To be ranked</div>}
+              <Typography
+                variant="body1"
+                color="primary"
+                fontWeight="bold"
+                fontFamily="Lato"
+              >
+                {token ? `# ${token.rank}` : 'Unranked'}
+              </Typography>
             </Stack>
           </Tooltip>
           <Tooltip
-            title={`Traits synced ${formatDistance(
-              new Date(token.synced_at),
-              new Date(),
-              {
-                addSuffix: true,
-              }
-            )} (${format(new Date(token.synced_at), 'dd MMM yyyy HH:mm')})`}
+            title={
+              token
+                ? `Traits synced ${formatDistance(
+                    new Date(token.synced_at),
+                    new Date(),
+                    {
+                      addSuffix: true,
+                    }
+                  )} (${format(
+                    new Date(token.synced_at),
+                    'dd MMM yyyy HH:mm'
+                  )})`
+                : 'Traits score not available'
+            }
           >
             <Stack direction="row" gap={1} alignItems="center">
               {isActivityTab ? (
                 <TimelineIcon style={{ color: 'gold', marginRight: '4px' }} />
               ) : (
                 <Typography variant="subtitle2" color="secondary">
-                  Rarity Score
+                  Traits Score
                 </Typography>
               )}
               <Typography
@@ -139,133 +159,157 @@ const TokenRanked = ({ address, token_id, refresh }) => {
                 fontWeight="bold"
                 fontFamily="Lato"
               >
-                {formatNumber(token.rarity, 'financial')}
+                {token ? formatNumber(token.rarity, 'financial') : '---'}
               </Typography>
             </Stack>
           </Tooltip>
         </Stack>
 
-        <TraitTableTooltip
-          arrow
-          open={isTraitTableOpen}
-          title={
-            <React.Fragment>
-              <ClickAwayListener onClickAway={() => setTraitTableOpen(false)}>
-                <TableContainer>
-                  <Table
-                    stickyHeader
-                    className="RarityLaserTraitTable"
-                    size="small"
+        <Stack direction="column" gap={1}>
+          <Stack direction="row" gap={1}>
+            <Typography variant="subtitle2" color="secondary">
+              Spot Price
+            </Typography>
+            <Typography
+              variant="body1"
+              color="primary"
+              fontWeight="bold"
+              fontFamily="Lato"
+            >
+              {priceLoading ? (
+                <CircularProgress size="1rem" />
+              ) : (
+                `${numberWithCommas(formatNumber(spotPrice))} $`
+              )}
+            </Typography>
+          </Stack>
+
+          {token && (
+            <TraitTableTooltip
+              arrow
+              open={isTraitTableOpen}
+              title={
+                <React.Fragment>
+                  <ClickAwayListener
+                    onClickAway={() => setTraitTableOpen(false)}
                   >
-                    <TableHead>
-                      <TableRow variant="head">
-                        <TableCell
-                          style={{ color: 'white', fontWeight: 'bold' }}
-                          align="center"
-                        >
-                          Trait
-                        </TableCell>
-                        <TableCell
-                          style={{ color: 'white', fontWeight: 'bold' }}
-                          align="center"
-                        >
-                          Score
-                        </TableCell>
-                        <TableCell
-                          style={{ color: 'white', fontWeight: 'bold' }}
-                          align="center"
-                        >
-                          Rarity
-                        </TableCell>
-                      </TableRow>
-                    </TableHead>
-                    <TableBody>
-                      {token.attributes
-                        .sort((a, b) => b.rarityScore - a.rarityScore)
-                        .slice(
-                          page * rowsPerPage,
-                          page * rowsPerPage + rowsPerPage
-                        )
-                        .map((el) => {
-                          return (
-                            <TableRow key={el.trait_type}>
-                              <TableCell
-                                align="center"
-                                style={{ color: 'white' }}
-                              >
-                                <small
-                                  style={{
-                                    textTransform: 'uppercase',
-                                    fontSize: '10px',
-                                    letterSpacing: '0.5px',
-                                  }}
-                                >
-                                  {el.trait_type}
-                                </small>
-                                <Typography>
-                                  {el.value === null ? (
-                                    <em style={{ opacity: 0.7 }}>
-                                      No {el.trait_type}
-                                    </em>
-                                  ) : (
-                                    el.value
-                                  )}
-                                </Typography>
-                              </TableCell>
-                              <TableCell
-                                align="center"
-                                style={{
-                                  color: 'white',
-                                  fontWeight: 'bold',
-                                }}
-                              >
-                                {formatNumber(el.rarityScore, 'financial')}
-                              </TableCell>
-                              <TableCell
-                                align="center"
-                                style={{
-                                  color: 'white',
-                                  fontWeight: 'bold',
-                                }}
-                              >
-                                {`${formatNumber(
-                                  // need to get back to percentage
-                                  (1 / el.rarityScore) * 100,
-                                  'financial'
-                                )} %`}
-                              </TableCell>
-                            </TableRow>
-                          );
-                        })}
-                    </TableBody>
-                  </Table>
-                  <TablePagination
-                    component="div"
-                    count={token.attributes.length}
-                    rowsPerPage={rowsPerPage}
-                    rowsPerPageOptions={[]}
-                    page={page}
-                    onPageChange={handleChangePage}
-                    style={{ color: 'white' }}
-                  />
-                </TableContainer>
-              </ClickAwayListener>
-            </React.Fragment>
-          }
-        >
-          <Chip
-            style={{
-              zIndex: 999,
-              ...(isTraitTableOpen && { borderColor: orange[500] }),
-            }}
-            variant="outlined"
-            icon={<DiamondIcon />}
-            label="VIEW TRAITS"
-            onClick={() => {
-              setTraitTableOpen((prev) => !prev);
-            }}
-          ></Chip>
-        </TraitTableTooltip>
+                    <TableContainer>
+                      <Table
+                        stickyHeader
+                        className="RarityLaserTraitTable"
+                        size="small"
+                      >
+                        <TableHead>
+                          <TableRow variant="head">
+                            <TableCell
+                              style={{ color: 'white', fontWeight: 'bold' }}
+                              align="center"
+                            >
+                              Trait
+                            </TableCell>
+                            <TableCell
+                              style={{ color: 'white', fontWeight: 'bold' }}
+                              align="center"
+                            >
+                              Score
+                            </TableCell>
+                            <TableCell
+                              style={{ color: 'white', fontWeight: 'bold' }}
+                              align="center"
+                            >
+                              Rarity
+                            </TableCell>
+                          </TableRow>
+                        </TableHead>
+                        <TableBody>
+                          {token.attributes
+                            .sort((a, b) => b.rarityScore - a.rarityScore)
+                            .slice(
+                              page * rowsPerPage,
+                              page * rowsPerPage + rowsPerPage
+                            )
+                            .map((el) => {
+                              return (
+                                <TableRow key={el.trait_type}>
+                                  <TableCell
+                                    align="center"
+                                    style={{ color: 'white' }}
+                                  >
+                                    <small
+                                      style={{
+                                        textTransform: 'uppercase',
+                                        fontSize: '10px',
+                                        letterSpacing: '0.5px',
+                                      }}
+                                    >
+                                      {el.trait_type}
+                                    </small>
+                                    <Typography>
+                                      {el.value === null ? (
+                                        <em style={{ opacity: 0.7 }}>
+                                          No {el.trait_type}
+                                        </em>
+                                      ) : (
+                                        el.value
+                                      )}
+                                    </Typography>
+                                  </TableCell>
+                                  <TableCell
+                                    align="center"
+                                    style={{
+                                      color: 'white',
+                                      fontWeight: 'bold',
+                                    }}
+                                  >
+                                    {formatNumber(el.rarityScore, 'financial')}
+                                  </TableCell>
+                                  <TableCell
+                                    align="center"
+                                    style={{
+                                      color: 'white',
+                                      fontWeight: 'bold',
+                                    }}
+                                  >
+                                    {`${formatNumber(
+                                      // need to get back to percentage
+                                      (1 / el.rarityScore) * 100,
+                                      'financial'
+                                    )} %`}
+                                  </TableCell>
+                                </TableRow>
+                              );
+                            })}
+                        </TableBody>
+                      </Table>
+                      <TablePagination
+                        component="div"
+                        count={token.attributes.length}
+                        rowsPerPage={rowsPerPage}
+                        rowsPerPageOptions={[]}
+                        page={page}
+                        onPageChange={handleChangePage}
+                        style={{ color: 'white' }}
+                      />
+                    </TableContainer>
+                  </ClickAwayListener>
+                </React.Fragment>
+              }
+            >
+              <Chip
+                style={{
+                  zIndex: 999,
+                  ...(isTraitTableOpen && { borderColor: orange[500] }),
+                }}
+                variant="outlined"
+                icon={<DiamondIcon />}
+                label="VIEW TRAITS"
+                onClick={() => {
+                  setTraitTableOpen((prev) => !prev);
+                }}
+              ></Chip>
+            </TraitTableTooltip>
+          )}
+        </Stack>
       </Stack>
     </Stack>
   );

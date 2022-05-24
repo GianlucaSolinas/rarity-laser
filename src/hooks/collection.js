@@ -6,6 +6,13 @@ const chainMapNames = {
 
 const getAssetProps = (asset, type) => {
   const assetlink = asset.getAttribute('href');
+  let price = null;
+
+  const priceContainer = asset.querySelector('.Price--main');
+
+  if (priceContainer) {
+    price = priceContainer.querySelector('.Price--amount').innerText;
+  }
 
   const [chain, address, token_id] = assetlink.split('/').slice(-3);
 
@@ -13,6 +20,7 @@ const getAssetProps = (asset, type) => {
     chain: chainMapNames[chain],
     address,
     token_id,
+    price,
   };
 };
 

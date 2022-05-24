@@ -53,7 +53,7 @@ const CollectionStats = ({ collectionObject }) => {
       <Stack direction="row" justifyContent="center">
         <div>
           <Button variant="outlined" onClick={() => setDialogOpen(true)}>
-            collection historical data
+            Analyze historical price
           </Button>
         </div>
 
