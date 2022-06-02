@@ -1,11 +1,11 @@
 {
-  "name": "rarity-laser-extension",
+  "name": "spy-volcano",
   "version": "0.0.1",
   "description": "",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/GianlucaSolinas/rarity-laser-extension.git"
+    "url": "https://github.com/GianlucaSolinas/spy-volcano.git"
   },
   "scripts": {
     "build": "node utils/build.js",

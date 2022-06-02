@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "Rarity Laser",
+  "name": "Spy Volcano",
   "description": "",
   "options_page": "options.html",
   "background": { "service_worker": "background.bundle.js" },

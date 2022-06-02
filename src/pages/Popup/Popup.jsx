@@ -29,7 +29,7 @@ const Popup = () => {
             control={<Switch size="small" checked={extensionConfig.enabled} />}
             label={
               <Typography variant="caption">
-                Allow Rarity Laser to inject into OpenSea
+                Allow Spy Volcano to inject into OpenSea
               </Typography>
             }
             onChange={(event) => {
