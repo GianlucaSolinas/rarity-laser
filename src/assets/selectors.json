@@ -1,0 +1,10 @@
+{
+  "nextSsrProps": {
+    "scriptSelector": "script#__NEXT_DATA__",
+    "paths": {
+      "profileUsername": "props.ssrData.account.user.publicUsername",
+      "profileAddress": "props.ssrData.account.address",
+      "profileImageUrl": "props.ssrData.account.imageUrl"
+    }
+  }
+}

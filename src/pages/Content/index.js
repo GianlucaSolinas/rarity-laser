@@ -211,36 +211,21 @@ const setupProfileInfo = async () => {
   if (document.querySelector('.ProfileInfo--rendered')) {
     // console.log('found ProfileInfo--rendered');
   } else {
-    const addressLinkElement = document.querySelector(
-      '.AccountHeader--address'
-    );
+    const accountHeaderNode = document.querySelector('ul.sc-151637b-0');
 
-    const accountHeaderNode = document.querySelector(
-      '.AccountHeader--subtitle'
-    );
+    const profileInfoNode = document.createElement('div');
 
-    if (addressLinkElement) {
-      const shortenedAddress = addressLinkElement.innerText;
+    profileInfoNode.classList.add('ProfileInfo--rendered');
+    profileInfoNode.style.width = '100%';
 
-      const profileInfoNode = document.createElement('div');
+    accountHeaderNode.parentNode.append(profileInfoNode);
 
-      profileInfoNode.classList.add('ProfileInfo--rendered');
-      profileInfoNode.style.width = '100%';
-
-      accountHeaderNode.parentNode.append(profileInfoNode);
-
-      injectReact(
-        <ProfileInfo shortenedAddress={shortenedAddress} />,
-        profileInfoNode
-      );
-    }
+    injectReact(<ProfileInfo />, profileInfoNode);
   }
 };
 
 const injectCollectionStats = (collectionObject) => {
-  const headerDescriptionElement = document.querySelector(
-    '.CollectionHeader--description'
-  );
+  const headerDescriptionElement = document.querySelector('.sc-1y1ib3i-2');
 
   if (!headerDescriptionElement) {
     return;
@@ -258,10 +243,7 @@ const injectCollectionStats = (collectionObject) => {
 
   node.style.minWidth = '50vw';
 
-  headerDescriptionElement.parentNode.insertBefore(
-    node,
-    headerDescriptionElement
-  );
+  headerDescriptionElement.append(node);
   injectReact(<CollectionStats collectionObject={collectionObject} />, node);
 };
 
@@ -296,6 +278,8 @@ const setupInjections = async () => {
     if (splitLink[1] === 'collection') {
       openSeaCollection = await fetchOpenSeaCollection(splitLink[2]);
       // rarityOverview = await getRarityOverview(openSeaCollection);
+    } else {
+      throttledSetupProfileInfo();
     }
 
     throttledSetupAssetInfo(openSeaCollection);
@@ -303,7 +287,6 @@ const setupInjections = async () => {
     throttledRefreshAssetInfo(openSeaCollection);
     throttledInjectCollectionStats(openSeaCollection);
 
-    throttledSetupProfileInfo();
     throttledBundleVerification();
     // throttledDestroyRemovedInjections();
   });

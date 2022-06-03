@@ -172,7 +172,7 @@ const EthGasTracker = () => {
           >
             <Grid item xs={6}>
               <Paper sx={{ background: '#282c34' }}>
-                <Typography variant="body2" color="#9AB37F">
+                <Typography variant="body2" color="primary">
                   Base fee
                 </Typography>
                 <Typography variant="body1" color="#E3E3F0" fontWeight="bold">
@@ -182,7 +182,7 @@ const EthGasTracker = () => {
             </Grid>
             <Grid item xs={6}>
               <Paper sx={{ background: '#282c34' }}>
-                <Typography variant="body2" color="#9AB37F">
+                <Typography variant="body2" color="primary">
                   Transactions
                 </Typography>
                 <Typography variant="body1" color="#E3E3F0" fontWeight="bold">
@@ -201,7 +201,7 @@ const EthGasTracker = () => {
             : 'Refreshing...'}
         </Typography>
         <LinearProgress
-          color="success"
+          color="primary"
           variant="determinate"
           value={progress}
           sx={{

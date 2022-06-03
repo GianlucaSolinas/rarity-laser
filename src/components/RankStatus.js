@@ -1,5 +1,6 @@
 import {
   ErrorOutline,
+  Pending,
   QuestionMarkOutlined,
   StarOutline,
 } from '@mui/icons-material';
@@ -12,6 +13,8 @@ const getIconStatus = (status) => {
       return <StarOutline />;
     case 'failed':
       return <ErrorOutline />;
+    case 'running':
+      return <Pending />;
     case 'unranked':
     default:
       return <QuestionMarkOutlined />;
@@ -24,6 +27,8 @@ const getColor = (status) => {
       return 'success';
     case 'failed':
       return 'error';
+    case 'running':
+      return 'primary';
     case 'unranked':
     default:
       return 'secondary';
@@ -36,6 +41,8 @@ const getLabel = (status) => {
       return 'RANKED';
     case 'failed':
       return 'RANKING FAILED';
+    case 'running':
+      return 'RANKING RUNNING';
     case 'unranked':
     default:
       return 'UNRANKED';

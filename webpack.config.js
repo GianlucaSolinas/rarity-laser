@@ -154,7 +154,7 @@ var options = {
     new CopyWebpackPlugin({
       patterns: [
         {
-          from: 'src/assets/img/icon-128.png',
+          from: 'src/assets/img/Spy-128-B.png',
           to: path.join(__dirname, 'build'),
           force: true,
         },
@@ -163,7 +163,7 @@ var options = {
     new CopyWebpackPlugin({
       patterns: [
         {
-          from: 'src/assets/img/icon-34.png',
+          from: 'src/assets/img/Spy-black-48.png',
           to: path.join(__dirname, 'build'),
           force: true,
         },
@@ -182,6 +182,24 @@ var options = {
       patterns: [
         {
           from: 'src/assets/img/solana.svg',
+          to: path.join(__dirname, 'build'),
+          force: true,
+        },
+      ],
+    }),
+    new CopyWebpackPlugin({
+      patterns: [
+        {
+          from: 'src/assets/img/Spy-O1.png',
+          to: path.join(__dirname, 'build'),
+          force: true,
+        },
+      ],
+    }),
+    new CopyWebpackPlugin({
+      patterns: [
+        {
+          from: 'src/assets/img/Spy-icon-orange.png',
           to: path.join(__dirname, 'build'),
           force: true,
         },

@@ -1,6 +1,5 @@
 import {
   Container,
-  Divider,
   FormControlLabel,
   Snackbar,
   Switch,
@@ -19,8 +18,11 @@ const Popup = () => {
   // const { isAuthenticated } = useMoralis();
   const [showSnackbar, setShowSnackbar] = useState(false);
 
+  const mainLogo = chrome.runtime.getURL('Spy-O1.png');
+
   return (
     <div className="App">
+      <img src={mainLogo} alt="logo" width="100%" height="auto" />
       {/* <AuthStatus /> */}
 
       {extensionConfig && (
@@ -43,19 +45,15 @@ const Popup = () => {
         </div>
       )}
 
-      <Divider sx={{ borderColor: '#9AB37F', marginTop: '4px' }} />
-
-      <Container>
-        <Typography sx={{ color: '#9AB37F' }} variant="subtitle2">
-          PRICES TRACKER
+      <Container sx={{ marginBottom: '1rem' }}>
+        <Typography color="primary" variant="subtitle2">
+          PRICE TRACKER
         </Typography>
         <PriceTracker />
       </Container>
 
-      <Divider sx={{ borderColor: '#9AB37F', marginTop: '4px' }} />
-
       <Container>
-        <Typography sx={{ color: '#9AB37F' }} variant="subtitle2">
+        <Typography color="primary" variant="subtitle2">
           ETH GAS TRACKER
         </Typography>
         <EthGasTracker />

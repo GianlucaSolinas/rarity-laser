@@ -28,6 +28,7 @@ import {
   formatNumber,
   numberWithCommas,
 } from '../hooks/utils';
+import _ from 'lodash';
 
 const ProfileInfo = ({ shortenedAddress }) => {
   const [active, setActive] = useState(false);
@@ -52,9 +53,14 @@ const ProfileInfo = ({ shortenedAddress }) => {
       window.location.href.split(/[?#]/)[0]
     ).then((res) => res.text());
     // Parse out the full address based on the shortened version
-    const address = (serverRender.match(
-      new RegExp(`${shortenedAddress.replace('...', '[a-z0-9]+?')}`, 'i')
-    ) || [])[0];
+
+    const html = document.createElement('html');
+    html.innerHTML = serverRender;
+    const nextData = JSON.parse(
+      html.querySelector('script#__NEXT_DATA__')?.innerHTML || '{}'
+    );
+
+    const address = _.get(nextData, 'props.ssrData.account.address');
 
     if (!address) return;
 
@@ -89,168 +95,192 @@ const ProfileInfo = ({ shortenedAddress }) => {
     );
   };
 
+  const logo = chrome.runtime.getURL('Spy-icon-orange.png');
+
   return (
-    <Paper sx={{ textAlign: 'center', padding: '16px', marginTop: '16px' }}>
-      <Stack gap={2} direction="column">
-        {!active && (
-          <Stack direction="row">
-            <Button size="small" variant="contained" onClick={calculate}>
-              Calculate profile value
-            </Button>
-          </Stack>
-        )}
-        {progress.loading && (
-          <Stack
-            direction="column"
-            gap={1}
-            justifyContent="center"
-            textAlign="center"
-          >
-            <LinearProgress variant="determinate" value={progress.current} />
-            <Typography
-              variant="body2"
-              color="secondary"
-            >{`${progress.current}%`}</Typography>
-          </Stack>
-        )}
-        {active && (
-          <Stack
-            direction="row"
-            gap={2}
-            justifyContent="space-around"
-            textAlign="center"
-          >
-            <Box>
-              <Typography
-                color="secondary"
-                variant="subtitle1"
-                fontFamily="Poppins"
-              >
-                Total floor
-              </Typography>
-              <Typography
-                variant="h6"
-                color="primary"
-                fontWeight="bold"
-                fontFamily="Lato"
-              >
-                <EthIcon />
-                {progress.numLoaded
-                  ? numberWithCommas(formatNumber(floorTotal))
-                  : '---'}
-              </Typography>
-            </Box>
-            <Box>
-              <Typography
-                color="secondary"
-                variant="subtitle1"
-                fontFamily="Poppins"
-              >
-                Average floor
-              </Typography>
-              <Typography
-                variant="h6"
-                color="primary"
-                fontWeight="bold"
-                fontFamily="Lato"
-              >
-                <EthIcon />
-                {progress.numLoaded
-                  ? numberWithCommas(
-                      formatNumber(floorTotalUnique / progress.numLoaded)
-                    )
-                  : '---'}
-              </Typography>
-            </Box>
-            <Box>
-              <Typography
-                color="secondary"
-                variant="subtitle1"
-                fontFamily="Poppins"
-              >
-                Collections
-              </Typography>
-              <Typography
-                variant="h6"
-                color="primary"
-                fontWeight="bold"
-                fontFamily="Lato"
-              >
-                {progress.numLoaded
-                  ? numberWithCommas(formatNumber(progress.numLoaded))
-                  : '---'}
-              </Typography>
-            </Box>
-          </Stack>
-        )}
-
-        {progress.complete && (
-          <Stack direction="row">
-            <Button
-              startIcon={<TableView />}
-              variant="contained"
-              onClick={() => {
-                setShowBreakdownDialog(true);
-              }}
+    <Paper
+      sx={{
+        textAlign: 'center',
+        padding: '16px',
+        marginTop: '16px',
+        backgroundImage: `url(${logo})`,
+        backgroundPosition: 'right',
+        backgroundRepeat: 'no-repeat',
+        backgroundSize: '100px',
+        backgroundOrigin: 'content-box',
+      }}
+    >
+      <div
+        style={{
+          width: '80%',
+        }}
+      >
+        <Stack gap={2} direction="column">
+          {progress.loading && (
+            <Stack
+              direction="column"
+              gap={1}
+              justifyContent="center"
+              textAlign="center"
             >
-              Show breakdown
-            </Button>
-          </Stack>
-        )}
+              <LinearProgress variant="determinate" value={progress.current} />
+              <Typography
+                variant="body2"
+                color="secondary"
+              >{`${progress.current}%`}</Typography>
+            </Stack>
+          )}
+          {active ? (
+            <Stack
+              direction="row"
+              gap={2}
+              justifyContent="space-around"
+              textAlign="center"
+            >
+              <Box>
+                <Typography
+                  color="secondary"
+                  variant="subtitle1"
+                  fontFamily="Poppins"
+                >
+                  Total floor
+                </Typography>
+                <Typography
+                  variant="h6"
+                  color="primary"
+                  fontWeight="bold"
+                  fontFamily="Lato"
+                >
+                  <EthIcon />
+                  {progress.numLoaded
+                    ? numberWithCommas(formatNumber(floorTotal))
+                    : '---'}
+                </Typography>
+              </Box>
+              <Box>
+                <Typography
+                  color="secondary"
+                  variant="subtitle1"
+                  fontFamily="Poppins"
+                >
+                  Average floor
+                </Typography>
+                <Typography
+                  variant="h6"
+                  color="primary"
+                  fontWeight="bold"
+                  fontFamily="Lato"
+                >
+                  <EthIcon />
+                  {progress.numLoaded
+                    ? numberWithCommas(
+                        formatNumber(floorTotalUnique / progress.numLoaded)
+                      )
+                    : '---'}
+                </Typography>
+              </Box>
+              <Box>
+                <Typography
+                  color="secondary"
+                  variant="subtitle1"
+                  fontFamily="Poppins"
+                >
+                  Collections
+                </Typography>
+                <Typography
+                  variant="h6"
+                  color="primary"
+                  fontWeight="bold"
+                  fontFamily="Lato"
+                >
+                  {progress.numLoaded
+                    ? numberWithCommas(formatNumber(progress.numLoaded))
+                    : '---'}
+                </Typography>
+              </Box>
+            </Stack>
+          ) : (
+            <Stack direction="row" paddingTop={2} paddingBottom={2}>
+              <Button size="small" variant="contained" onClick={calculate}>
+                Calculate profile value
+              </Button>
+            </Stack>
+          )}
 
-        <Dialog
-          open={showBreakdownDialog}
-          onClose={() => {
-            setShowBreakdownDialog(false);
-          }}
-        >
-          <DialogTitle>Collections breakdown</DialogTitle>
-          <DialogContent>
-            <TableContainer>
-              <Table>
-                <TableHead>
-                  <TableCell>Collection</TableCell>
-                  <TableCell>Floor price</TableCell>
-                  <TableCell>Owned</TableCell>
-                  <TableCell>Total floor</TableCell>
-                </TableHead>
-                <TableBody>
-                  {collectionsBreakdown.map((coll) => {
-                    //name, slug, image, floor: floor.price, ownedCount
-                    return (
-                      <TableRow>
-                        <TableCell>
-                          <Chip
-                            variant="outlined"
-                            component="a"
-                            clickable
-                            target="_blank"
-                            href={`https://opensea.io/collection/${coll.slug}`}
-                            avatar={<Avatar alt={coll.name} src={coll.image} />}
-                            label={coll.name}
-                          >
-                            {coll.name}
-                          </Chip>
-                        </TableCell>
-                        <TableCell>
-                          <EthIcon /> {coll.floor}
-                        </TableCell>
-                        <TableCell>x{coll.ownedCount}</TableCell>
-                        <TableCell>
-                          <EthIcon />
-                          {numberWithCommas(
-                            formatNumber(coll.ownedCount * coll.floor)
-                          )}
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })}
-                </TableBody>
-              </Table>
-            </TableContainer>
-          </DialogContent>
-        </Dialog>
-      </Stack>
+          {progress.complete && (
+            <Stack direction="row">
+              <Button
+                startIcon={<TableView />}
+                variant="contained"
+                onClick={() => {
+                  setShowBreakdownDialog(true);
+                }}
+              >
+                Show breakdown
+              </Button>
+            </Stack>
+          )}
+
+          <Dialog
+            open={showBreakdownDialog}
+            onClose={() => {
+              setShowBreakdownDialog(false);
+            }}
+            fullWidth={true}
+            maxWidth="md"
+          >
+            <DialogTitle>Collections breakdown</DialogTitle>
+            <DialogContent>
+              <TableContainer>
+                <Table>
+                  <TableHead>
+                    <TableCell>Collection</TableCell>
+                    <TableCell>Floor price</TableCell>
+                    <TableCell>Owned</TableCell>
+                    <TableCell>Total floor</TableCell>
+                  </TableHead>
+                  <TableBody>
+                    {collectionsBreakdown
+                      .sort((a, b) => b.ownedCount - a.ownedCount)
+                      .map((coll) => {
+                        //name, slug, image, floor: floor.price, ownedCount
+                        return (
+                          <TableRow>
+                            <TableCell>
+                              <Chip
+                                variant="outlined"
+                                component="a"
+                                clickable
+                                target="_blank"
+                                href={`https://opensea.io/collection/${coll.slug}`}
+                                avatar={
+                                  <Avatar alt={coll.name} src={coll.image} />
+                                }
+                                label={coll.name}
+                              >
+                                {coll.name}
+                              </Chip>
+                            </TableCell>
+                            <TableCell>
+                              <EthIcon /> {coll.floor}
+                            </TableCell>
+                            <TableCell>x{coll.ownedCount}</TableCell>
+                            <TableCell>
+                              <EthIcon />
+                              {numberWithCommas(
+                                formatNumber(coll.ownedCount * coll.floor)
+                              )}
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
+                  </TableBody>
+                </Table>
+              </TableContainer>
+            </DialogContent>
+          </Dialog>
+        </Stack>
+      </div>
     </Paper>
   );
 };

@@ -141,7 +141,7 @@ const TopTenOwners = ({
               variant="contained"
               onClick={() =>
                 fetch({
-                  onSuccess: () => {
+                  onComplete: () => {
                     onCollectionSuccess();
                   },
                 })

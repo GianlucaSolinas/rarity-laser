@@ -9,7 +9,9 @@ import HistoricalChart from './charts/HistoricalChart';
 import OwnersWrapper from './stats/TopTenOwners';
 
 const CollectionStats = ({ collectionObject }) => {
-  const hasTwitter = document.querySelector('a[href*="https://twitter.com/"]');
+  const hasTwitter = document.querySelector(
+    'a[href*="https://www.twitter.com/"]'
+  );
   const hasDiscord = document.querySelector('a[href*="https://discord.gg/"]');
   const hasEtherscan = document.querySelector('a[href*="etherscan.io"]');
   const [dialogOpen, setDialogOpen] = useState(null);

@@ -104,6 +104,15 @@ const AssetInfo = ({
       severity: 'info',
     });
 
+    if (openSeaCollection === null) {
+      setToast({
+        message: 'Something went wrong. Please try again later',
+        open: true,
+        severity: 'error',
+      });
+      return;
+    }
+
     const activationResult = await askSubscription({
       params: {
         opensea_name: openSeaCollection.name,
@@ -130,7 +139,8 @@ const AssetInfo = ({
       }
     } else {
       setToast({
-        message: 'Cannot rank this collection.',
+        message:
+          'The request took a while to finish. Please reload page to see results.',
         open: true,
         severity: 'error',
       });
