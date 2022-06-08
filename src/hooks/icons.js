@@ -19,4 +19,17 @@ const SolanaIcon = () => {
   return <img src={solanaLogo} alt="Solana" width="25px" height="25px" />;
 };
 
-export { WhaleIcon, EthIcon, SolanaIcon };
+const SpyVolcanoIcon = ({ customStyle }) => {
+  const spyVolcanoLogo = chrome.runtime.getURL('Spy-icon-orange.png');
+
+  return (
+    <img
+      src={spyVolcanoLogo}
+      alt="Spy Volcano"
+      width="100px"
+      style={customStyle}
+    />
+  );
+};
+
+export { WhaleIcon, EthIcon, SolanaIcon, SpyVolcanoIcon };

@@ -4,6 +4,20 @@ const chainMapNames = {
   ethereum: 'eth',
 };
 
+const getPropsFromLink = (link, type) => {
+  switch (type) {
+    case 'list_item':
+      return link
+        .split('/')
+        .filter((e) => e.length)
+        .slice(-3);
+
+    case 'card_item':
+    default:
+      return link.split('/').slice(-3);
+  }
+};
+
 const getAssetProps = (asset, type) => {
   const assetlink = asset.getAttribute('href');
   let price = null;
@@ -14,7 +28,7 @@ const getAssetProps = (asset, type) => {
     price = priceContainer.querySelector('.Price--amount').innerText;
   }
 
-  const [chain, address, token_id] = assetlink.split('/').slice(-3);
+  const [chain, address, token_id] = getPropsFromLink(assetlink, type);
 
   return {
     chain: chainMapNames[chain],

@@ -16,6 +16,7 @@ import React, { useEffect, useState } from 'react';
 import { useMoralis, useMoralisWeb3Api } from 'react-moralis';
 import { formatNumber } from '../../hooks/utils';
 import NumbersIcon from '@mui/icons-material/Numbers';
+import { Replay } from '@mui/icons-material';
 
 const formatGwei = (n) => {
   return formatNumber(n * 0.000000001, 'financial');
@@ -123,6 +124,8 @@ const EthGasTracker = () => {
               setProgress(0);
               setError(null);
             }}
+            variant="contained"
+            startIcon={<Replay />}
           >
             Retry
           </Button>

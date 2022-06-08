@@ -35,7 +35,8 @@
         "covalent.svg",
         "solana.svg",
         "Spy-O1.png",
-        "Spy-icon-orange.png"
+        "Spy-icon-orange.png",
+        "Spy-Black.png"
       ],
       "matches": ["<all_urls>"]
     }

@@ -5,16 +5,18 @@ import {
   Stack,
   Dialog,
   Paper,
+  Divider,
 } from '@mui/material';
 import React, { useState } from 'react';
 import { clearCollectionSub } from '../hooks/utils';
 import { useMoralisCloudFunction } from 'react-moralis';
 
 import TokenRanked from './TokenRanked';
-import RankStatus from './RankStatus';
 import HistoricalChartNFT from './charts/HistoricalChartNFT';
 import { BarChart } from '@mui/icons-material';
 // import RarityLine from './RarityLine';
+import { SpyVolcanoIcon } from '../hooks/icons';
+import { orange } from '@mui/material/colors';
 
 const AssetInfo = ({
   address,
@@ -96,7 +98,7 @@ const AssetInfo = ({
   //   }
   // }, [token_id, address]);
 
-  const requestSubscription = async () => {
+  const requestCollectionRanking = async () => {
     setToast({
       message:
         'Ranking process started! Please wait or come back later to view rankings.',
@@ -191,43 +193,26 @@ const AssetInfo = ({
         </>
       )}
 
-      <Stack mb={1} alignItems="start">
-        {collectionObject ? (
-          <RankStatus status={collectionObject.status} />
-        ) : (
-          <Button
-            size="small"
-            variant="outlined"
-            onClick={() => {
-              requestSubscription();
-            }}
-            style={{ cursor: 'pointer' }}
-          >
-            Request ranking
-          </Button>
-        )}
-      </Stack>
-      {/* {rarityPosition !== null && (
-        <Stack direction="column" gap={1}>
-          <Typography variant="subtitle2">Rarity Laser</Typography>
-          <RarityLine
-            rarityPosition={rarityPosition}
-            totalTraitsPositions={totalTraitsPositions}
-          />
-        </Stack>
-      )} */}
+      <TokenRanked
+        address={address}
+        token_id={token_id}
+        refresh={refresh}
+        price={price}
+        onRequestRank={requestCollectionRanking}
+        // instantRarity={instantRarity}
+      />
 
-      <Stack>
-        <TokenRanked
-          address={address}
-          token_id={token_id}
-          refresh={refresh}
-          price={price}
-          // instantRarity={instantRarity}
-        />
-      </Stack>
+      <Divider
+        variant="fullWidth"
+        sx={{ borderColor: orange[500], margin: '1rem 0rem' }}
+      />
 
-      <Stack direction="row" alignItems="start" gap={1}>
+      <Stack
+        direction="row"
+        alignItems="start"
+        justifyContent="space-between"
+        gap={1}
+      >
         <div>
           <Button
             startIcon={<BarChart />}
@@ -235,6 +220,9 @@ const AssetInfo = ({
             size="small"
             onClick={() => {
               setDialogOpen(true);
+            }}
+            sx={{
+              zIndex: 39,
             }}
           >
             item history
@@ -254,6 +242,8 @@ const AssetInfo = ({
         >
           <HistoricalChartNFT address={address} token_id={token_id} />
         </Dialog>
+
+        <SpyVolcanoIcon customStyle={{ opacity: 0.75 }} />
       </Stack>
 
       {error && <small>!! {error} !!</small>}

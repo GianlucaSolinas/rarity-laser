@@ -167,6 +167,8 @@ const setupAssetInfo = async () => {
       assetElement.parentNode
         .querySelector('.AssetCell--container')
         .prepend(elem);
+
+      assetElement.parentElement.parentElement.style.width = '300px';
     }
   });
 };

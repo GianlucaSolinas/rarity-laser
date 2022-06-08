@@ -61,6 +61,10 @@ const theme = createTheme({
         },
         outlined: {
           color: orange[500],
+          borderColor: orange[800],
+          fontWeight: 'bold',
+          fontFamily: 'Lato',
+          fontSize: '1rem',
         },
       },
     },
