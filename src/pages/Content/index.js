@@ -14,7 +14,6 @@ import Moralis from 'moralis';
 import CollectionStats from '../../components/CollectionStats';
 import ProfileInfo from '../../components/ProfileInfo';
 import BundleVerification from '../../components/BundleVerification';
-// import { OpenSeaPort, Network } from 'opensea-js';
 
 const RENDERED_KEY = '__RarityLaser_rendered';
 
@@ -210,6 +209,11 @@ const injectBundleVerification = () => {
 };
 
 const setupProfileInfo = async () => {
+  const splitLink = window.location.pathname.split('/');
+  if (splitLink[1] === 'collection') {
+    return;
+  }
+
   if (document.querySelector('.ProfileInfo--rendered')) {
     // console.log('found ProfileInfo--rendered');
   } else {

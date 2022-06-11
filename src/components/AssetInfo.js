@@ -30,7 +30,8 @@ const AssetInfo = ({
   const [error, setError] = useState(null);
   const [currentToast, setToast] = useState({ open: false, message: '' });
   const [dialogOpen, setDialogOpen] = useState(null);
-
+  const splitLink = window.location.pathname.split('/');
+  const isActivityTab = splitLink.pop() === 'activity';
   // const [instantRarity, setInstantRarity] = useState(null);
   // const [rarityPosition, setRarityPosition] = useState(null);
 
@@ -132,11 +133,17 @@ const AssetInfo = ({
           open: true,
           severity: 'error',
         });
-      } else {
+      } else if (activationResult.message === 'success') {
         setToast({
           message: 'Ranking successfully completed!',
           open: true,
           severity: 'success',
+        });
+      } else {
+        setToast({
+          message: activationResult.message,
+          open: true,
+          severity: 'info',
         });
       }
     } else {
@@ -199,17 +206,18 @@ const AssetInfo = ({
         refresh={refresh}
         price={price}
         onRequestRank={requestCollectionRanking}
-        // instantRarity={instantRarity}
+        openSeaCollection={openSeaCollection}
+        collection={collectionObject}
       />
 
       <Divider
         variant="fullWidth"
-        sx={{ borderColor: orange[500], margin: '1rem 0rem' }}
+        sx={{ borderColor: orange[500], margin: '0.5rem 0rem' }}
       />
 
       <Stack
-        direction="row"
-        alignItems="start"
+        direction={isActivityTab ? 'column' : 'row'}
+        alignItems="center"
         justifyContent="space-between"
         gap={1}
       >
@@ -243,7 +251,7 @@ const AssetInfo = ({
           <HistoricalChartNFT address={address} token_id={token_id} />
         </Dialog>
 
-        <SpyVolcanoIcon customStyle={{ opacity: 0.75 }} />
+        <SpyVolcanoIcon />
       </Stack>
 
       {error && <small>!! {error} !!</small>}

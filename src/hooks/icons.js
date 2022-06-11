@@ -26,8 +26,8 @@ const SpyVolcanoIcon = ({ customStyle }) => {
     <img
       src={spyVolcanoLogo}
       alt="Spy Volcano"
-      width="100px"
       style={customStyle}
+      width="75px"
     />
   );
 };

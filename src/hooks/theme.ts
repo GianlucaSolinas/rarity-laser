@@ -65,6 +65,8 @@ const theme = createTheme({
           fontWeight: 'bold',
           fontFamily: 'Lato',
           fontSize: '1rem',
+          lineHeight: '1rem',
+          borderRadius: '5px',
         },
       },
     },

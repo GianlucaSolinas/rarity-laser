@@ -113,6 +113,7 @@ var options = {
       stream: require.resolve('stream-browserify'),
       assert: require.resolve('assert'),
       http: require.resolve('stream-http'),
+      path: require.resolve('path-browserify'),
       https: require.resolve('https-browserify'),
       os: require.resolve('os-browserify'),
       url: require.resolve('url'),
@@ -163,6 +164,15 @@ var options = {
     new CopyWebpackPlugin({
       patterns: [
         {
+          from: 'src/assets/img/Spy-48-O.png',
+          to: path.join(__dirname, 'build'),
+          force: true,
+        },
+      ],
+    }),
+    new CopyWebpackPlugin({
+      patterns: [
+        {
           from: 'src/assets/img/Spy-black-48.png',
           to: path.join(__dirname, 'build'),
           force: true,
@@ -200,6 +210,15 @@ var options = {
       patterns: [
         {
           from: 'src/assets/img/Spy-O1.png',
+          to: path.join(__dirname, 'build'),
+          force: true,
+        },
+      ],
+    }),
+    new CopyWebpackPlugin({
+      patterns: [
+        {
+          from: 'src/assets/img/White.png',
           to: path.join(__dirname, 'build'),
           force: true,
         },

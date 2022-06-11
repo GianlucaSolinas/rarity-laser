@@ -15,6 +15,8 @@ import {
   TablePagination,
   Stack,
   Button,
+  Box,
+  ListItem,
 } from '@mui/material';
 import { useMoralisQuery } from 'react-moralis';
 import { format, formatDistance } from 'date-fns';
@@ -29,12 +31,53 @@ import {
   EmojiEvents,
   LocalFireDepartment,
   Poll,
-  StarBorder,
 } from '@mui/icons-material';
 
-const TokenRanked = ({ address, token_id, refresh, price, onRequestRank }) => {
-  const params = new URL(window.document.location).searchParams;
-  const isActivityTab = params.get('tab') === 'activity';
+const getStatusRanked = (collection) => {
+  if (!collection) {
+    return 'Unranked';
+  }
+
+  switch (collection.status) {
+    case 'running':
+      return 'Running...';
+    case 'failed':
+      return 'Ranking failed';
+    case 'ranked':
+      return 'Not available';
+
+    default:
+      return 'Unranked';
+  }
+};
+const getStatusRankedMessage = (collection) => {
+  if (!collection) {
+    return 'Unranked';
+  }
+
+  switch (collection.status) {
+    case 'running':
+      return 'Ranking calculation is running, please come back later to view the results';
+    case 'failed':
+      return 'Ranking calculation has failed, collection is incompatible.';
+
+    default:
+      return 'Ranking for this item is not available.';
+  }
+};
+
+const TokenRanked = ({
+  address,
+  token_id,
+  refresh,
+  price,
+  onRequestRank,
+  openSeaCollection,
+  collection,
+}) => {
+  const splitLink = window.location.pathname.split('/');
+  const isActivityTab = splitLink.pop() === 'activity';
+
   const [currency, setCurrency] = useState('USD');
 
   const [isTraitTableOpen, setTraitTableOpen] = useState(false);
@@ -91,15 +134,77 @@ const TokenRanked = ({ address, token_id, refresh, price, onRequestRank }) => {
   }
 
   return (
-    <Stack mb={1} direction="row" gap={1} flexWrap="wrap">
+    <Stack
+      direction={isActivityTab ? 'column' : 'row'}
+      gap={1}
+      flexWrap="wrap"
+      justifyContent="start"
+    >
       <TraitTableTooltip
         title={
           token ? (
-            <div>
-              {`Ranked ${formatDistance(new Date(token.updatedAt), new Date(), {
-                addSuffix: true,
-              })} (${format(new Date(token.updatedAt), 'dd MMM yyyy HH:mm')})`}
-            </div>
+            <Stack>
+              <Box>
+                <Stack direction="row" alignItems="center">
+                  <EmojiEvents
+                    color="primary"
+                    fontSize="large"
+                    sx={{ marginRight: '1rem' }}
+                  />
+                  <Typography variant="h5" color="primary">
+                    {token
+                      ? `${token.rank || '---'} / ${
+                          openSeaCollection.stats.count
+                        }`
+                      : getStatusRanked(collection)}
+                  </Typography>
+                </Stack>
+              </Box>
+              <Box component="ul">
+                <ListItem>
+                  <StarIcon
+                    fontSize="small"
+                    color="secondary"
+                    sx={{
+                      marginRight: '0.5rem',
+                    }}
+                  />
+                  {`Ranked ${formatDistance(
+                    new Date(token.updatedAt),
+                    new Date(),
+                    {
+                      addSuffix: true,
+                    }
+                  )} (${format(
+                    new Date(token.updatedAt),
+                    'dd MMM yyyy HH:mm'
+                  )})`}
+                </ListItem>
+                {token.last_metadata_sync && (
+                  <ListItem>
+                    <DiamondIcon
+                      fontSize="small"
+                      color="secondary"
+                      sx={{ marginRight: '0.5rem' }}
+                    />
+                    {`Traits synced ${formatDistance(
+                      new Date(token.last_metadata_sync),
+                      new Date(),
+                      {
+                        addSuffix: true,
+                      }
+                    )} (${format(
+                      new Date(token.last_metadata_sync),
+                      'dd MMM yyyy HH:mm'
+                    )})`}
+                  </ListItem>
+                )}
+              </Box>
+            </Stack>
+          ) : collection ? (
+            <Typography variant="caption">
+              {getStatusRankedMessage(collection)}
+            </Typography>
           ) : (
             <Button
               size="small"
@@ -117,7 +222,9 @@ const TokenRanked = ({ address, token_id, refresh, price, onRequestRank }) => {
         <Chip
           variant="outlined"
           icon={<EmojiEvents sx={{ color: `${grey[500]} !important` }} />}
-          label={token ? `# ${token.rank}` : 'Unranked'}
+          label={
+            token ? `# ${token.rank || '---'}` : getStatusRanked(collection)
+          }
         />
       </TraitTableTooltip>
 
@@ -173,8 +280,10 @@ const TokenRanked = ({ address, token_id, refresh, price, onRequestRank }) => {
                                 <small
                                   style={{
                                     textTransform: 'uppercase',
-                                    fontSize: '10px',
-                                    letterSpacing: '0.5px',
+                                    fontSize: '0.75rem',
+                                    fontFamily: 'Lato',
+                                    letterSpacing: '0.75px',
+                                    opacity: 0.75,
                                   }}
                                 >
                                   {el.trait_type}
@@ -251,24 +360,28 @@ const TokenRanked = ({ address, token_id, refresh, price, onRequestRank }) => {
         </TraitTableTooltip>
       )}
 
-      <Tooltip
-        title={`Price in ${currency} at ${format(
-          new Date(),
-          'dd MMM yyyy HH:mm'
-        )}`}
-      >
-        <Chip
-          variant="outlined"
-          icon={<CurrencyExchange sx={{ color: `${grey[500]} !important` }} />}
-          label={
-            priceLoading ? (
-              <CircularProgress size="1rem" />
-            ) : (
-              `${numberWithCommas(formatNumber(spotPrice))} $`
-            )
-          }
-        />
-      </Tooltip>
+      {!isActivityTab && (
+        <Tooltip
+          title={`Price in ${currency} at ${format(
+            new Date(),
+            'dd MMM yyyy HH:mm'
+          )}`}
+        >
+          <Chip
+            variant="outlined"
+            icon={
+              <CurrencyExchange sx={{ color: `${grey[500]} !important` }} />
+            }
+            label={
+              priceLoading ? (
+                <CircularProgress size="1rem" />
+              ) : (
+                `${numberWithCommas(formatNumber(spotPrice))} $`
+              )
+            }
+          />
+        </Tooltip>
+      )}
     </Stack>
   );
 };
