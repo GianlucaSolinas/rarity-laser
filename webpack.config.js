@@ -117,6 +117,10 @@ var options = {
       https: require.resolve('https-browserify'),
       os: require.resolve('os-browserify'),
       url: require.resolve('url'),
+      zlib: require.resolve('browserify-zlib'),
+      vm: require.resolve('vm-browserify'),
+      fs: false,
+      module: false,
     },
   },
   plugins: [
@@ -219,6 +223,15 @@ var options = {
       patterns: [
         {
           from: 'src/assets/img/White.png',
+          to: path.join(__dirname, 'build'),
+          force: true,
+        },
+      ],
+    }),
+    new CopyWebpackPlugin({
+      patterns: [
+        {
+          from: 'src/assets/img/logo_orange.svg',
           to: path.join(__dirname, 'build'),
           force: true,
         },

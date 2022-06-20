@@ -1,4 +1,5 @@
 import DataLoader from 'dataloader';
+import ky from 'ky';
 
 const chainMapNames = {
   ethereum: 'eth',
@@ -43,9 +44,9 @@ const openseaCollectionLoader = new DataLoader(async (slugs) => {
     slugs.map(async (currslug) => {
       if (currslug === null) return null;
 
-      const { collection } = await (
-        await fetch(`https://api.opensea.io/api/v1/collection/${currslug}`)
-      ).json();
+      const { collection } = await ky
+        .get(`https://api.opensea.io/api/v1/collection/${currslug}`)
+        .json();
 
       return collection;
     })
@@ -59,9 +60,9 @@ const fetchOpenSeaCollection = async (slug) => {
 const getOpenseaCollection = async (collectionSlug) => {
   if (collectionSlug === null) return null;
 
-  const { collection } = await (
-    await fetch(`https://api.opensea.io/api/v1/collection/${collectionSlug}`)
-  ).json();
+  const { collection } = await ky
+    .get(`https://api.opensea.io/api/v1/collection/${collectionSlug}`)
+    .json();
 
   return collection;
 };

@@ -8,8 +8,6 @@ import {
   Divider,
 } from '@mui/material';
 import React, { useState } from 'react';
-import { clearCollectionSub } from '../hooks/utils';
-import { useMoralisCloudFunction } from 'react-moralis';
 
 import TokenRanked from './TokenRanked';
 import HistoricalChartNFT from './charts/HistoricalChartNFT';
@@ -17,6 +15,9 @@ import { BarChart } from '@mui/icons-material';
 // import RarityLine from './RarityLine';
 import { SpyVolcanoIcon } from '../hooks/icons';
 import { orange } from '@mui/material/colors';
+import { fetchOpenSeaCollection } from '../hooks/collection';
+import { useMutation } from 'react-query';
+import { createRankedCollection } from '../queries/rankedCollection';
 
 const AssetInfo = ({
   address,
@@ -32,136 +33,67 @@ const AssetInfo = ({
   const [dialogOpen, setDialogOpen] = useState(null);
   const splitLink = window.location.pathname.split('/');
   const isActivityTab = splitLink.pop() === 'activity';
-  // const [instantRarity, setInstantRarity] = useState(null);
-  // const [rarityPosition, setRarityPosition] = useState(null);
 
-  // const { collectionTotalTraits, rarestCombination, totalTraitsPositions } =
-  //   rarityOverview;
-
-  const {
-    fetch: askSubscription,
-    data: askSubscriptionData,
-    error: askSubscriptionError,
-    isLoading: askSubscriptionLoading,
-  } = useMoralisCloudFunction('rankCollection', {}, { autoFetch: false });
-
-  // const fetchData = async () => {
-  //   console.log('fething data');
-
-  //   const { data, error } = await (
-  //     await fetch(
-  //       `https://api.covalenthq.com/v1/1/tokens/${address}/nft_metadata/${token_id}/?key=ckey_e53411317f40450b8b679520247`
-  //     )
-  //   ).json();
-
-  // const item = data.items[0];
-  // const nft_data = item.nft_data[0];
-  // const attributes = nft_data.external_data.attributes;
-
-  // const missingAttributes = Object.keys(collectionTotalTraits).filter((e) => {
-  //   return attributes.findIndex(({ trait_type }) => trait_type === e) === -1;
-  // });
-
-  // const calculatedRarities = attributes
-  //   .concat(
-  //     missingAttributes.map((e) => ({ trait_type: e, value: '__empty__' }))
-  //   )
-  //   .reduce((acc, { trait_type, value, display_type }) => {
-  //     console.log('collectionTotalTraits', collectionTotalTraits);
-  //     console.log({ trait_type, value, display_type });
-  //     const traitTotal = collectionTotalTraits[trait_type];
-  //     if (traitTotal) {
-  //       const formattedValue = String(value).toLowerCase();
-  //       const percValue = (1 / traitTotal[formattedValue]) * 100;
-  //       acc[trait_type] = {
-  //         trait: formattedValue,
-  //         value: 1 / percValue,
-  //         position: rarestCombination[trait_type].findIndex((el) =>
-  //           Object.hasOwn(el, formattedValue)
-  //         ),
-  //       };
-  //     }
-
-  //     return acc;
-  //   }, {});
-
-  // setInstantRarity(Object.entries(calculatedRarities));
-  // setRarityPosition(
-  //   Object.values(calculatedRarities).reduce((acc, el) => {
-  //     return acc + el.position;
-  //   }, 0)
-  // );
-  // };
-
-  // useEffect(() => {
-  //   if (token_id && address) {
-  //     fetchData();
-  //   }
-  // }, [token_id, address]);
+  const { mutate, isLoading } = useMutation((newCollection) =>
+    createRankedCollection(newCollection)
+  );
 
   const requestCollectionRanking = async () => {
     setToast({
-      message:
-        'Ranking process started! Please wait or come back later to view rankings.',
+      message: `Ranking process started! Please come back later to view rankings.`,
       open: true,
       severity: 'info',
     });
 
-    if (openSeaCollection === null) {
-      setToast({
-        message: 'Something went wrong. Please try again later',
-        open: true,
-        severity: 'error',
-      });
-      return;
-    }
+    const splitLink = window.location.pathname.split('/');
 
-    const activationResult = await askSubscription({
-      params: {
-        opensea_name: openSeaCollection.name,
-        opensea_slug: openSeaCollection.slug,
-        payout_address: openSeaCollection.payout_address,
-        address,
-        // chain,
-      },
-    });
+    let OpenseaCollectionObject = null;
 
-    if (activationResult) {
-      if (activationResult.message === 'failed') {
+    if (splitLink[1] === 'collection') {
+      OpenseaCollectionObject = await fetchOpenSeaCollection(splitLink[2]);
+
+      if (OpenseaCollectionObject === null) {
         setToast({
-          message: 'Cannot rank this collection.',
+          message: 'Something went wrong. Please try again later',
           open: true,
           severity: 'error',
         });
-      } else if (activationResult.message === 'success') {
-        setToast({
-          message: 'Ranking successfully completed!',
-          open: true,
-          severity: 'success',
-        });
-      } else {
-        setToast({
-          message: activationResult.message,
-          open: true,
-          severity: 'info',
-        });
+        return;
       }
-    } else {
-      setToast({
-        message:
-          'The request took a while to finish. Please reload page to see results.',
-        open: true,
-        severity: 'error',
-      });
     }
 
-    await clearCollectionSub(address);
+    // use OpenseaCollectionObject
+    mutate(
+      {
+        name: OpenseaCollectionObject.name,
+        opensea_slug: OpenseaCollectionObject.slug,
+        contract_address: address,
+        chain: 'ETH',
+        items_count: OpenseaCollectionObject.stats.count,
+      },
+      {
+        onError: (err) => {
+          setToast({
+            message: err.message,
+            open: true,
+            severity: 'error',
+          });
+        },
+        onSuccess: async (res) => {
+          setToast({
+            message: `Ranking request completed! Please come back later to view the results.`,
+            open: true,
+            severity: 'success',
+          });
 
-    Array.from(
-      document.querySelectorAll(`[data-waiting-sub="${address}"]`)
-    ).forEach((elNode) => {
-      elNode.dataset['shouldUpdate'] = true;
-    });
+          Array.from(
+            document.querySelectorAll(`[data-waiting-sub="${address}"]`)
+          ).forEach((elNode) => {
+            elNode.dataset['shouldUpdate'] = true;
+          });
+        },
+      }
+    );
   };
 
   // const quickBidBuy = () => {
@@ -180,7 +112,7 @@ const AssetInfo = ({
 
   return (
     <Paper
-      style={{
+      sx={{
         padding: '8px',
         ...(type === 'card_item'
           ? {
@@ -193,10 +125,10 @@ const AssetInfo = ({
             }),
       }}
     >
-      {askSubscriptionLoading && (
+      {isLoading && (
         <>
           <LinearProgress />
-          <small>Calculating rarity...</small>
+          <small>Loading...</small>
         </>
       )}
 
@@ -220,6 +152,12 @@ const AssetInfo = ({
         alignItems="center"
         justifyContent="space-between"
         gap={1}
+        sx={{
+          '&:hover': {
+            paddingBottom: '30px',
+            transition: 'padding-bottom 0.25s ease-in-out',
+          },
+        }}
       >
         <div>
           <Button
@@ -251,7 +189,9 @@ const AssetInfo = ({
           <HistoricalChartNFT address={address} token_id={token_id} />
         </Dialog>
 
-        <SpyVolcanoIcon />
+        <div style={{ width: '75px' }}>
+          <SpyVolcanoIcon />
+        </div>
       </Stack>
 
       {error && <small>!! {error} !!</small>}

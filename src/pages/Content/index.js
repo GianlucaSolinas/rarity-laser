@@ -7,13 +7,13 @@ import { getAssetProps, fetchOpenSeaCollection } from '../../hooks/collection';
 import _ from 'lodash';
 import {
   fetchCollectionSlug,
-  fetchCollectionSub,
   // getRarityOverview,
 } from '../../hooks/utils';
 import Moralis from 'moralis';
 import CollectionStats from '../../components/CollectionStats';
 import ProfileInfo from '../../components/ProfileInfo';
 import BundleVerification from '../../components/BundleVerification';
+import { fetchSingleCollection } from '../../queries/rankedCollection';
 
 const RENDERED_KEY = '__RarityLaser_rendered';
 
@@ -61,7 +61,7 @@ const assetInfoRenderer = async (openSeaCollection) => {
           node.classList.add('RarityLaserAssetInfo');
           node.classList.add(`RarityLaserAssetInfo--${type}`);
 
-          const collectionObject = await fetchCollectionSub(props.address);
+          const collectionObject = await fetchSingleCollection(props.address);
 
           if (!collectionObject) {
             node.dataset['waitingSub'] = props.address;
@@ -98,7 +98,7 @@ const refreshAssetInfo = () => {
   nodes.forEach(async (node) => {
     const props = JSON.parse(node.dataset['props']);
 
-    const collectionObject = await fetchCollectionSub(props.address);
+    const collectionObject = await fetchSingleCollection(props.address);
     let openSeaCollection = null;
 
     if (!collectionObject) {

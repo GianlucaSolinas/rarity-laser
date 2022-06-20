@@ -1,5 +1,6 @@
 import { RateLimit } from 'async-sema';
 import DataLoader from 'dataloader';
+import ky from 'ky';
 import Moralis from 'moralis';
 
 const formatNumber = (n, type) => {
@@ -38,9 +39,9 @@ const collectionSlugLoader = new DataLoader(
   async (keys) => {
     const { address, tokenId } = keys[0];
     await openSeaPublicRateLimit();
-    const asset = await fetch(
-      `https://api.opensea.io/api/v1/asset/${address}/${tokenId}`
-    ).then((res) => res.json());
+    const asset = await ky
+      .get(`https://api.opensea.io/api/v1/asset/${address}/${tokenId}`)
+      .json();
 
     return [asset.collection.slug];
   },

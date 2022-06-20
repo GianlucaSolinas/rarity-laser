@@ -38,7 +38,8 @@
         "Spy-O1.png",
         "White.png",
         "Spy-icon-orange.png",
-        "Spy-Black.png"
+        "Spy-Black.png",
+        "logo_orange.svg"
       ],
       "matches": ["<all_urls>"]
     }

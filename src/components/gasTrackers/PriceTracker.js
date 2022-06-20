@@ -15,6 +15,7 @@ import React, { useEffect, useState } from 'react';
 import { useMoralis, useMoralisWeb3Api } from 'react-moralis';
 import { formatNumber } from '../../hooks/utils';
 import NumbersIcon from '@mui/icons-material/Numbers';
+import ky from 'ky';
 
 const formatGwei = (n) => {
   return formatNumber(n * 0.000000001, 'financial');
@@ -43,13 +44,13 @@ const PriceTracker = () => {
 
   const fetchPrices = async () => {
     setLoading(true);
-    const solanaPrice = await (
-      await fetch(`https://api.coinbase.com/v2/prices/SOL-${currency}/spot`)
-    ).json();
+    const solanaPrice = await ky
+      .get(`https://api.coinbase.com/v2/prices/SOL-${currency}/spot`)
+      .json();
 
-    const ethPrice = await (
-      await fetch(`https://api.coinbase.com/v2/prices/ETH-${currency}/spot`)
-    ).json();
+    const ethPrice = await ky
+      .get(`https://api.coinbase.com/v2/prices/ETH-${currency}/spot`)
+      .json();
 
     setLoading(false);
     setPrices({

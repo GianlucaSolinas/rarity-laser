@@ -4,10 +4,20 @@ import EventEmitter from 'events';
 import { MoralisProvider } from 'react-moralis';
 import { CssBaseline, ThemeProvider } from '@mui/material';
 import theme from '../hooks/theme';
+import { QueryClient, QueryClientProvider } from 'react-query';
 
-const events = new EventEmitter();
-events.setMaxListeners(1000);
-export const EventEmitterContext = React.createContext(events);
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      refetchOnWindowFocus: false,
+    },
+  },
+});
+
+// const events = new EventEmitter();
+// events.setMaxListeners(1000);
+
+// export const EventEmitterContext = React.createContext(events);
 // export const GlobalConfigContext = React.createContext({
 //   autoQueueAddresses,
 //   refreshQueued,
@@ -24,7 +34,9 @@ const AppProvider = ({ children }) => {
         appId="UHCopLz11iLSe1fk4yQ81qjpU4tvaAuG5WAlHuHi"
       >
         {/* <UserProvider>{children}</UserProvider> */}
-        {children}
+        <QueryClientProvider client={queryClient}>
+          {children}
+        </QueryClientProvider>
       </MoralisProvider>
     </ThemeProvider>
   );

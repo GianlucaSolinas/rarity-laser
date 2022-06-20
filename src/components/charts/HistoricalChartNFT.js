@@ -21,6 +21,8 @@ import React, { useEffect, useRef, useState } from 'react';
 import { format, sub } from 'date-fns';
 import { orange } from '@mui/material/colors';
 import { shortenAddress } from '../../hooks/utils';
+import ky from 'ky';
+import web3 from 'web3';
 
 Chart.register(annotationPlugin);
 
@@ -39,11 +41,11 @@ const HistoricalChartNFT = ({ address, token_id }) => {
   const fetchData = async () => {
     setLoading(true);
 
-    const { data, error } = await (
-      await fetch(
+    const { data, error } = await ky
+      .get(
         `https://api.covalenthq.com/v1/1/tokens/${address}/nft_transactions/${token_id}/?&quote-currency=EUR&format=JSON&key=ckey_e53411317f40450b8b679520247`
       )
-    ).json();
+      .json();
 
     if (error) {
       console.log(error);
@@ -69,7 +71,7 @@ const HistoricalChartNFT = ({ address, token_id }) => {
           .filter((e) => e.vale !== '0')
           .map((e) => ({
             x: new Date(e.block_signed_at).getTime(),
-            y: Moralis.Units.FromWei(e.value),
+            y: web3.utils.fromWei(e.value),
           })),
         color: '#DBDBDB',
         borderColor: '#DBDBDB',
@@ -83,7 +85,7 @@ const HistoricalChartNFT = ({ address, token_id }) => {
         type: 'bar',
         data: el.nft_transactions.map((e) => ({
           x: new Date(e.block_signed_at).getTime(),
-          y: e.fees_paid ? Moralis.Units.FromWei(e.fees_paid) : 0,
+          y: e.fees_paid ? web3.utils.fromWei(e.fees_paid) : 0,
         })),
         color: orange[800],
         borderColor: orange[800],

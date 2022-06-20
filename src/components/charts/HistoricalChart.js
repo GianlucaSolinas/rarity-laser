@@ -21,6 +21,9 @@ import chroma from 'chroma-js';
 import React, { useEffect, useRef, useState } from 'react';
 import { format, sub } from 'date-fns';
 import { createChartGradient } from '../../hooks/chart';
+import ky from 'ky';
+import web3 from 'web3';
+import { web } from 'webpack';
 
 Chart.register(zoomPlugin);
 
@@ -47,11 +50,11 @@ const HistoricalChart = ({ collectionObject, onClose }) => {
         'yyyy-MM-dd'
       );
 
-      const { data, error } = await (
-        await fetch(
+      const { data, error } = await ky
+        .get(
           `https://api.covalenthq.com/v1/1/nft_market/collection/${primaryContract.address}/?from=${fromDate}&to=${LAST_DATA_DATE}&quote-currency=EUR&format=JSON&key=ckey_e53411317f40450b8b679520247`
         )
-      ).json();
+        .json();
 
       if (error) {
         console.log(error);
@@ -92,7 +95,7 @@ const HistoricalChart = ({ collectionObject, onClose }) => {
         order: 100,
         data: datahistory.map((e) => ({
           x: new Date(e.opening_date).getTime(),
-          y: Moralis.Units.FromWei(e.volume_wei_day),
+          y: web3.utils.fromWei(e.volume_wei_day),
         })),
         color: '#D2D9FE',
         yAxisID: 'y2',
@@ -108,7 +111,7 @@ const HistoricalChart = ({ collectionObject, onClose }) => {
         order: 50,
         data: datahistory.map((e) => ({
           x: new Date(e.opening_date).getTime(),
-          y: Moralis.Units.FromWei(e.average_volume_wei_day),
+          y: web3.utils.fromWei(e.average_volume_wei_day),
         })),
         yAxisID: 'y',
         color: '#FFD1C7',
@@ -123,7 +126,7 @@ const HistoricalChart = ({ collectionObject, onClose }) => {
         order: 0,
         data: datahistory.map((e) => ({
           x: new Date(e.opening_date).getTime(),
-          y: Moralis.Units.FromWei(e.floor_price_wei_7d),
+          y: web3.utils.fromWei(e.floor_price_wei_7d),
         })),
         yAxisID: 'y',
         type: 'bar',
