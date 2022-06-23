@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   Avatar,
   Box,
@@ -43,15 +43,21 @@ const openSeaPublicRateLimit = RateLimit(2);
 const OpenseaProfileChipLoader = ({ username, address, index }) => {
   const { ref, inView } = useInView({ threshold: 1, delay: 2500 });
 
-  const { data: openseaProfile } = useQuery(
+  const { data: openseaProfile, refetch } = useQuery(
     ['fetchOpenseaUser', address],
     async () => {
       await openSeaPublicRateLimit();
       const data = await ky.get(`https://api.opensea.io/user/${address}`);
       return data.json();
     },
-    { enabled: inView }
+    { enabled: false, retry: false }
   );
+
+  useEffect(() => {
+    if (inView) {
+      refetch();
+    }
+  }, [inView, refetch]);
 
   const updatedUsername = openseaProfile?.username || username;
 
