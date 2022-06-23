@@ -1,7 +1,6 @@
 import { RateLimit } from 'async-sema';
 import DataLoader from 'dataloader';
 import ky from 'ky';
-import Moralis from 'moralis';
 
 const formatNumber = (n, type) => {
   if (typeof n === 'string') {
@@ -60,33 +59,6 @@ const collectionSlugLoader = new DataLoader(
 
 const fetchCollectionSlug = async (address, tokenId) => {
   return collectionSlugLoader.load({ address, tokenId });
-};
-
-const collectionSubLoader = new DataLoader(async (addresses) => {
-  const CollectionSub = Moralis.Object.extend('CollectionSub');
-  const query = new Moralis.Query(CollectionSub);
-  query.containedIn('contract_address', addresses);
-
-  const res = await query.find();
-
-  const collSubString = JSON.stringify(res, null, 2);
-
-  const results = collSubString ? JSON.parse(collSubString) : null;
-
-  return addresses.map((thisaddress) =>
-    results.find(({ contract_address }) => contract_address === thisaddress)
-  );
-});
-
-const fetchCollectionSub = async (address) => {
-  if (!address) {
-    return null;
-  }
-  return await collectionSubLoader.load(address);
-};
-
-const clearCollectionSub = async (address) => {
-  return collectionSubLoader.clear(address);
 };
 
 const abbrevNumber = (n) => {
@@ -229,11 +201,19 @@ const capitalize = (str) => {
   return String(str).replace(/\b\w/g, (l) => l.toUpperCase());
 };
 
+const checkWhale = (el) => {
+  if ((el.balance / el.total_supply) * 100 >= 10) {
+    return true;
+  } else if (el.total_floor > 1000) {
+    return true;
+  } else {
+    return false;
+  }
+};
+
 export {
   formatNumber,
   fetchCollectionSlug,
-  fetchCollectionSub,
-  clearCollectionSub,
   abbrevNumber,
   numberWithCommas,
   fetchAllCollectionsForUser,
@@ -242,4 +222,5 @@ export {
   getRarityOverview,
   slugify,
   capitalize,
+  checkWhale,
 };

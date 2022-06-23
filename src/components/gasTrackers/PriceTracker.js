@@ -12,7 +12,6 @@ import {
   Paper,
 } from '@mui/material';
 import React, { useEffect, useState } from 'react';
-import { useMoralis, useMoralisWeb3Api } from 'react-moralis';
 import { formatNumber } from '../../hooks/utils';
 import NumbersIcon from '@mui/icons-material/Numbers';
 import ky from 'ky';

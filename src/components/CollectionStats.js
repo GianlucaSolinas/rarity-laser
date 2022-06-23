@@ -43,16 +43,17 @@ const CollectionStats = ({ collectionObject }) => {
         {hasDiscord && (
           <DiscordInfo discordUrl={hasDiscord.getAttribute('href')} />
         )}
-        <FloorPriceAnalysis collectionObject={collectionObject} />
+        <FloorPriceAnalysis />
         {hasEtherscan && (
           <OwnersWrapper
             etherscanAddress={hasEtherscan.getAttribute('href')}
             payout_address={collectionObject.payout_address}
+            floor_price={collectionObject.stats.floor_price}
           />
         )}
       </Stack>
 
-      <Stack direction="row" justifyContent="center">
+      {/* <Stack direction="row" justifyContent="center">
         <div>
           <Button variant="outlined" onClick={() => setDialogOpen(true)}>
             Analyze historical price
@@ -67,7 +68,7 @@ const CollectionStats = ({ collectionObject }) => {
         >
           <HistoricalChart collectionObject={collectionObject} />
         </Dialog>
-      </Stack>
+      </Stack> */}
     </Stack>
   );
 };

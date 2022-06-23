@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
-import Moralis from 'moralis';
-import { useMoralisCloudFunction, useMoralisQuery } from 'react-moralis';
 import {
   Avatar,
   Box,
   Button,
   Chip,
   Dialog,
+  List,
+  ListItem,
   Paper,
   Skeleton,
   Stack,
@@ -19,74 +19,49 @@ import {
   Tooltip,
   Typography,
 } from '@mui/material';
-import { formatNumber, shortenAddress } from '../../hooks/utils';
+import {
+  checkWhale,
+  fetchFloorPrice,
+  formatNumber,
+  numberWithCommas,
+  shortenAddress,
+} from '../../hooks/utils';
 import { formatDistanceToNow } from 'date-fns';
 import { Copyright, Verified } from '@mui/icons-material';
 import { EthIcon, WhaleIcon } from '../../hooks/icons';
+import { useQuery } from 'react-query';
+import { fetchTopTenOwners } from '../../queries/trend';
 
 const TopTenOwners = ({
   collectionData,
   onCollectionSuccess,
   contract_address,
   payout_address,
+  floor_price = 0,
 }) => {
-  const owners = collectionData ? collectionData.top_ten_owners : [];
   const [modalOpen, setModalOpen] = useState(false);
 
-  const { data, isLoading: ownersLoading } = useMoralisQuery(
-    'Owners',
-    (query) =>
-      query.containedIn(
-        'address',
-        owners.map((e) => e.address)
-      ),
-    [collectionData]
-  );
-
-  const {
-    fetch,
-    isLoading: cloudFunctionLoading,
-    isFetching,
-  } = useMoralisCloudFunction(
-    'getWhales',
-    {
-      address: contract_address,
-    },
-    { autoFetch: false }
+  const { data, isLoading, error } = useQuery(
+    ['fetchTopTenOwners', { contract_address }],
+    fetchTopTenOwners
   );
 
   let ownersData = null;
   let whalesCount = 0;
 
-  if (data && data.length) {
-    const ownersDataString = JSON.stringify(data, null, 2);
-    ownersData = ownersDataString ? JSON.parse(ownersDataString) : null;
+  if (data && data.items.length) {
+    ownersData = data.items.map((el) => {
+      const total_floor = el.balance * floor_price;
+      const isWhale = checkWhale({ ...el, total_floor });
 
-    if (ownersData) {
-      ownersData = ownersData
-        .map((e) => {
-          let isWhale = false;
-          let thisowner = owners.find((ow) => ow.address === e.address);
+      if (isWhale) {
+        whalesCount++;
+      }
 
-          const balance = Moralis.Units.FromWei(e.balance);
-          const ethBalance = formatNumber(balance);
-
-          if (ethBalance > 100) {
-            isWhale = true;
-            whalesCount++;
-          }
-
-          return {
-            ...thisowner,
-            ...e,
-            isWhale,
-          };
-        })
-        .sort((a, b) => b.amount - a.amount);
-    }
+      return { ...el, total_floor };
+    });
   }
 
-  const isLoading = cloudFunctionLoading || isFetching || ownersLoading;
   // const covalentLogo = chrome.runtime.getURL('solana.svg');
 
   return (
@@ -121,45 +96,20 @@ const TopTenOwners = ({
           )}
         </Typography>
       </Stack>
-      <Typography variant="subtitle2">Whales in Top 10 owners</Typography>
+      <Typography variant="subtitle2">Whales in Top 100 owners</Typography>
 
       <Box textAlign="center" marginTop="8px">
         <Stack direction="column" gap={1}>
-          {ownersData ? (
-            <Button
-              size="small"
-              variant="contained"
-              onClick={() => {
-                setModalOpen(true);
-              }}
-            >
-              Show Top 10
-            </Button>
-          ) : (
-            <Button
-              size="small"
-              variant="contained"
-              onClick={() =>
-                fetch({
-                  onComplete: () => {
-                    onCollectionSuccess();
-                  },
-                })
-              }
-            >
-              {isLoading ? 'Fetching...' : 'Fetch top 10'}
-            </Button>
-          )}
-          {collectionData && (
-            <Typography variant="caption" fontStyle="italic">
-              {`Synced ${formatDistanceToNow(
-                new Date(collectionData.updatedAt),
-                {
-                  addSuffix: true,
-                }
-              )}`}
-            </Typography>
-          )}
+          <Button
+            size="small"
+            variant="contained"
+            onClick={() => {
+              setModalOpen(true);
+            }}
+            disabled={isLoading}
+          >
+            {isLoading ? 'Loading' : 'Show Top 100'}
+          </Button>
         </Stack>
       </Box>
       <Dialog
@@ -172,20 +122,27 @@ const TopTenOwners = ({
           <TableContainer>
             <Table stickyHeader size="small">
               <TableHead>
-                <TableCell align="left">Rank</TableCell>
-                <TableCell align="center">Items owned</TableCell>
-                <TableCell align="left">Profile</TableCell>
-                <TableCell align="right">Wallet balance</TableCell>
-                <TableCell align="center">Badges</TableCell>
+                <TableCell variant="head" align="left">
+                  Rank
+                </TableCell>
+                <TableCell variant="head" align="center">
+                  Items owned
+                </TableCell>
+                <TableCell variant="head" align="left">
+                  Profile / address
+                </TableCell>
+                <TableCell variant="head" align="right">
+                  Total floor
+                </TableCell>
+                <TableCell variant="head" align="center">
+                  Badges
+                </TableCell>
               </TableHead>
               <TableBody>
                 {ownersData.map((el, index) => {
-                  const balance = Moralis.Units.FromWei(el.balance);
-                  const ethBalance = formatNumber(balance);
-
                   const hasOpenseaAccount = !!el.openseaAccount;
 
-                  const isWhale = ethBalance > 100;
+                  const isWhale = checkWhale(el);
                   const isVerified = hasOpenseaAccount
                     ? el.openseaAccount.account.config === 'verified'
                     : false;
@@ -204,7 +161,7 @@ const TopTenOwners = ({
                       </TableCell>
                       <TableCell align="center">
                         <Typography variant="body1" fontWeight="bold">
-                          {el.amount}
+                          {el.balance}
                         </Typography>
                       </TableCell>
                       <TableCell align="left">
@@ -232,9 +189,12 @@ const TopTenOwners = ({
                         </Tooltip>
                       </TableCell>
                       <TableCell align="right">
-                        <Tooltip title={balance}>
+                        <Tooltip title={numberWithCommas(el.total_floor)}>
                           <Typography variant="body1" fontWeight="bold">
-                            <EthIcon /> {ethBalance}
+                            <EthIcon />{' '}
+                            {numberWithCommas(
+                              formatNumber(el.total_floor, 'financial')
+                            )}
                           </Typography>
                         </Tooltip>
                       </TableCell>
@@ -253,7 +213,22 @@ const TopTenOwners = ({
                             </Tooltip>
                           )}
                           {isWhale && (
-                            <Tooltip title="This address holds more than 100 ETH">
+                            <Tooltip
+                              title={
+                                <List
+                                  subheader={`Conditions required to be considered "whale":`}
+                                >
+                                  <ListItem>
+                                    Total floor (floor price * items owned) is
+                                    more than 1000 ETH
+                                  </ListItem>
+                                  <ListItem>
+                                    Items owned are more than 10% of the total
+                                    supply
+                                  </ListItem>
+                                </List>
+                              }
+                            >
                               <div style={{ margin: '4px' }}>
                                 <WhaleIcon viewBox="0 0 30 30" />
                               </div>
@@ -280,33 +255,16 @@ const TopTenOwners = ({
   );
 };
 
-const OwnersWrapper = ({ etherscanAddress, payout_address }) => {
+const OwnersWrapper = ({ etherscanAddress, payout_address, floor_price }) => {
   const splitLink = etherscanAddress.split('/');
   const contract_address = splitLink.pop();
-
-  const { data: visitedCollection, fetch: fetchCollection } = useMoralisQuery(
-    'VisitedCollection',
-    (query) => query.equalTo('address', contract_address)
-  );
-
-  let collectionData = null;
-
-  if (visitedCollection && visitedCollection.length) {
-    const collectionDataString = JSON.stringify(visitedCollection[0], null, 2);
-    collectionData = collectionDataString
-      ? JSON.parse(collectionDataString)
-      : null;
-  }
 
   return (
     <React.Fragment>
       <TopTenOwners
         contract_address={contract_address}
         payout_address={payout_address}
-        collectionData={collectionData}
-        onCollectionSuccess={() => {
-          fetchCollection();
-        }}
+        floor_price={floor_price}
       />
     </React.Fragment>
   );

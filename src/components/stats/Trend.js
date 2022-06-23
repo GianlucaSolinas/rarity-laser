@@ -60,6 +60,7 @@ const NotAvailableTrend = () => {
 
 const Trend = ({ trend, notAvailable = false }) => {
   let trendColor = 'white';
+  const oldestLog = trend ? trend.logs[0] : null;
 
   if (notAvailable) {
     return <NotAvailableTrend />;
@@ -79,7 +80,7 @@ const Trend = ({ trend, notAvailable = false }) => {
     <Tooltip
       title={`${trend.change.count > 0 ? '+' : ''}${
         trend.change.count
-      } since ${format(trend.lastVisit, 'dd/MM/yyyy HH:mm')}`}
+      } since ${format(new Date(oldestLog.createdAt), 'dd/MM/yyyy HH:mm')}`}
     >
       <Box textAlign="center">
         <Divider sx={{ borderColor: 'white', margin: '4px 0px' }} />
@@ -105,7 +106,9 @@ const Trend = ({ trend, notAvailable = false }) => {
           </Typography>
         </Stack>
         <Typography variant="caption" fontStyle="italic">
-          {`in the last ${formatDistanceToNowStrict(trend.lastVisit)}`}
+          {`in the last ${formatDistanceToNowStrict(
+            new Date(oldestLog.createdAt)
+          )}`}
         </Typography>
       </Box>
     </Tooltip>

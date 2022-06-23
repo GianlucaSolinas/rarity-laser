@@ -10,12 +10,10 @@ import { useExtensionConfig } from '../../hooks/extensionConfig';
 import './Popup.css';
 // import AuthStatus from '../../components/AuthStatus';
 import EthGasTracker from '../../components/gasTrackers/EthGasTracker';
-// import { useMoralis } from 'react-moralis';
 import PriceTracker from '../../components/gasTrackers/PriceTracker';
 
 const Popup = () => {
   const [extensionConfig, setExtensionConfig] = useExtensionConfig();
-  // const { isAuthenticated } = useMoralis();
   const [showSnackbar, setShowSnackbar] = useState(false);
 
   const mainLogo = chrome.runtime.getURL('Spy-O1.png');

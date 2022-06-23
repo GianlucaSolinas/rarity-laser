@@ -1,9 +1,11 @@
 import ky from 'ky';
 
+const API_URL = 'https://spy-volcano-api.herokuapp.com';
+
 async function fetchSingleCollection(address) {
   try {
     return await ky
-      .get(`http://localhost:3001/collections/${address}`, {
+      .get(`${API_URL}/collections/${address}`, {
         headers: {
           'Content-Type': 'application/json',
         },
@@ -17,7 +19,7 @@ async function fetchSingleCollection(address) {
 async function createRankedCollection(obj) {
   console.log('crate ranked', obj);
   try {
-    return await ky.post(`http://localhost:3001/collections`, {
+    return await ky.post(`${API_URL}/collections`, {
       json: obj,
       headers: { contentType: 'application/json' },
     });

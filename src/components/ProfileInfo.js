@@ -106,7 +106,7 @@ const ProfileInfo = ({ shortenedAddress }) => {
         backgroundImage: `url(${logo})`,
         backgroundPosition: 'right',
         backgroundRepeat: 'no-repeat',
-        backgroundSize: '100px',
+        backgroundSize: '120px',
         backgroundOrigin: 'content-box',
       }}
     >
@@ -232,7 +232,7 @@ const ProfileInfo = ({ shortenedAddress }) => {
             <DialogTitle>Collections breakdown</DialogTitle>
             <DialogContent>
               <TableContainer>
-                <Table>
+                <Table stickyHeader>
                   <TableHead>
                     <TableCell>Collection</TableCell>
                     <TableCell>Floor price</TableCell>

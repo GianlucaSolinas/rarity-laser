@@ -1,34 +1,38 @@
 import { Paper, Skeleton, Stack, Tooltip, Typography } from '@mui/material';
 import React from 'react';
 import { FaTwitter } from 'react-icons/fa';
-import { useMoralisCloudFunction } from 'react-moralis';
+import { useQuery } from 'react-query';
 import {
   abbrevNumber,
   formatNumber,
   numberWithCommas,
 } from '../../hooks/utils';
+import { fetchTwitterFollowers } from '../../queries/trend';
 import Trend from './Trend';
 
 const TwitterInfo = ({ twitterLink }) => {
   const splitLink = twitterLink.split('/');
-  const { data, isLoading, error } = useMoralisCloudFunction(
-    'getTwitterFollowers',
-    {
-      name: splitLink.pop(),
-    }
+
+  const { data, error, isLoading } = useQuery(
+    ['fetchTwitterFollowers', { username: splitLink.pop() }],
+    fetchTwitterFollowers
   );
 
   let followersCount = 0;
   let trend = null;
+  console.log('data twitter', data);
 
   if (data) {
-    followersCount = data.data.public_metrics.followers_count;
+    followersCount = data.public_metrics.followers_count;
 
-    if (data.trend) {
-      const changeCount = data.trend.lastData.followers_count - followersCount;
+    if (data.trend && data.trend.length) {
+      const oldestLog = data.trend[0];
+
+      const changeCount =
+        oldestLog.data.public_metrics.followers_count - followersCount;
 
       trend = {
-        ...data.trend,
+        logs: data.trend,
         change: {
           percentage: formatNumber((changeCount / followersCount) * 100),
           count: changeCount,

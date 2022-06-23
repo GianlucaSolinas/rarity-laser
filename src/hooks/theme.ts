@@ -50,6 +50,9 @@ const theme = createTheme({
           borderColor: orange[300],
           padding: '8px 16px',
         },
+        head: {
+          background: '#4B5362',
+        },
       },
     },
     MuiChip: {

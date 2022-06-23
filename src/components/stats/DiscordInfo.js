@@ -1,22 +1,21 @@
 import { Paper, Skeleton, Stack, Tooltip, Typography } from '@mui/material';
 import React from 'react';
 import { FaDiscord } from 'react-icons/fa';
-import { useMoralisCloudFunction } from 'react-moralis';
+import { useQuery } from 'react-query';
 import {
   abbrevNumber,
   formatNumber,
   numberWithCommas,
 } from '../../hooks/utils';
+import { fetchDiscordMembers } from '../../queries/trend';
 import Trend from './Trend';
 
 const DiscordInfo = ({ discordUrl }) => {
   const splitLink = discordUrl.split('/');
 
-  const { data, isLoading, error } = useMoralisCloudFunction(
-    'getDiscordMembers',
-    {
-      guildCode: splitLink.pop(),
-    }
+  const { data, isLoading, error } = useQuery(
+    ['fetchDiscordMembers', { guildCode: splitLink.pop() }],
+    fetchDiscordMembers
   );
 
   let membersCount = 0;
@@ -25,12 +24,14 @@ const DiscordInfo = ({ discordUrl }) => {
   if (data) {
     membersCount = data.approximate_member_count;
 
-    if (data.trend) {
+    if (data.trend && data.trend.length) {
+      const oldestLog = data.trend[0];
+
       const changeCount =
-        data.trend.lastData.approximate_member_count - membersCount;
+        oldestLog.data.approximate_member_count - membersCount;
 
       trend = {
-        ...data.trend,
+        logs: data.trend,
         change: {
           percentage: formatNumber((changeCount / membersCount) * 100),
           count: changeCount,

@@ -15,7 +15,6 @@ import 'chartjs-adapter-date-fns';
 // import ChartDataLabels from 'chartjs-plugin-datalabels';
 import annotationPlugin from 'chartjs-plugin-annotation';
 
-import Moralis from 'moralis';
 import chroma from 'chroma-js';
 import React, { useEffect, useRef, useState } from 'react';
 import { format, sub } from 'date-fns';

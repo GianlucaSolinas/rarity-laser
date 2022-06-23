@@ -169,9 +169,7 @@ const TokenRanked = ({
                   />
                   <Typography variant="h5" color="primary">
                     {token && token.rank
-                      ? `${token.rank || '---'} / ${
-                          openSeaCollection.stats.count
-                        }`
+                      ? `${token.rank || '---'} / ${collection.items_count}`
                       : getStatusRanked(collection)}
                   </Typography>
                 </Stack>

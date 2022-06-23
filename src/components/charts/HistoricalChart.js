@@ -16,7 +16,6 @@ import 'chartjs-adapter-date-fns';
 
 import zoomPlugin from 'chartjs-plugin-zoom';
 
-import Moralis from 'moralis';
 import chroma from 'chroma-js';
 import React, { useEffect, useRef, useState } from 'react';
 import { format, sub } from 'date-fns';
@@ -24,6 +23,8 @@ import { createChartGradient } from '../../hooks/chart';
 import ky from 'ky';
 import web3 from 'web3';
 import { web } from 'webpack';
+import { useQuery } from 'react-query';
+import { fetchHistoricalCollection } from '../../queries/covalent';
 
 Chart.register(zoomPlugin);
 
@@ -31,62 +32,42 @@ const LAST_DATA_DATE = '2022-04-06';
 
 const HistoricalChart = ({ collectionObject, onClose }) => {
   const [chartInstance, setChartInstance] = useState(null);
-  const [loading, setLoading] = useState(null);
   const [datahistory, setDataHistory] = useState(null);
   const [currentTimeRangeOption, setCurrentTimeRangeOption] =
     useState('7 days');
+
   const canvasRef = useRef(null);
 
-  const fetchData = async () => {
-    setLoading(true);
-    const primaryContract = collectionObject
-      ? collectionObject.primary_asset_contracts[0]
-      : null;
-    if (primaryContract) {
-      const [nDuration, duration] = currentTimeRangeOption.split(' ');
+  const primaryContract = collectionObject
+    ? collectionObject.primary_asset_contracts[0]
+    : null;
 
-      const fromDate = format(
-        sub(new Date(LAST_DATA_DATE), { [duration]: nDuration }),
-        'yyyy-MM-dd'
-      );
+  const [nDuration, duration] = currentTimeRangeOption.split(' ');
 
-      const { data, error } = await ky
-        .get(
-          `https://api.covalenthq.com/v1/1/nft_market/collection/${primaryContract.address}/?from=${fromDate}&to=${LAST_DATA_DATE}&quote-currency=EUR&format=JSON&key=ckey_e53411317f40450b8b679520247`
-        )
-        .json();
+  const fromDate = format(
+    sub(new Date(LAST_DATA_DATE), { [duration]: nDuration }),
+    'yyyy-MM-dd'
+  );
 
-      if (error) {
-        console.log(error);
-        setLoading(false);
-      } else {
-        setDataHistory(data.items);
-        setLoading(false);
-      }
+  const { isLoading } = useQuery(
+    [
+      'getHistoricalCollection',
+      { address: primaryContract.address, from: fromDate, to: LAST_DATA_DATE },
+    ],
+    fetchHistoricalCollection,
+    {
+      onSuccess: (res) => {
+        if (res === null) {
+          return;
+        } else {
+          setDataHistory(res.items);
+        }
+      },
+      onError: (err) => {
+        console.error(err);
+      },
     }
-  };
-
-  useEffect(() => {
-    if (collectionObject) {
-      fetchData();
-    }
-  }, [collectionObject, currentTimeRangeOption]);
-
-  const getGradient = (ctx, chartArea, color) => {
-    const gradientBg = ctx.createLinearGradient(
-      0,
-      chartArea.top,
-      0,
-      chartArea.bottom
-    );
-
-    const scale = chroma.scale([color, '#4a4e54']);
-    [0, 0.5, 1].forEach((e) => {
-      gradientBg.addColorStop(e, scale(e).alpha(0.7).css());
-    });
-
-    return gradientBg;
-  };
+  );
 
   const getDatasets = () => {
     const datasets = [
@@ -360,7 +341,7 @@ const HistoricalChart = ({ collectionObject, onClose }) => {
       </DialogTitle>
       <DialogContent sx={{ overflow: 'hidden', position: 'relative' }}>
         <Box padding={2} sx={{ position: 'relative', overflow: 'hidden' }}>
-          {loading && (
+          {isLoading && (
             <Backdrop open={true}>
               <CircularProgress />
             </Backdrop>

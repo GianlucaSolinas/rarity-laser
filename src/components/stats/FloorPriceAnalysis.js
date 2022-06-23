@@ -1,49 +1,39 @@
 import { PriceChange } from '@mui/icons-material';
 import { Paper, Skeleton, Stack, Tooltip, Typography } from '@mui/material';
 import React, { useEffect, useState } from 'react';
-import { useMoralisWeb3Api } from 'react-moralis';
 import { formatNumber, numberWithCommas } from '../../hooks/utils';
 import Trend from './Trend';
-import Moralis from 'moralis';
+import { fetchOpenseaStats } from '../../queries/trend';
+import { useQuery } from 'react-query';
 
 const FloorPriceAnalysis = ({ collectionObject }) => {
-  const floorPrice = collectionObject.stats?.floor_price;
-  const [trend, setTrend] = useState(null);
-  const [loadingTrend, setLoadingTrend] = useState(false);
+  const splitLink = window.location.pathname.split('/');
 
-  const Web3Api = useMoralisWeb3Api();
+  const { data, isLoading, error } = useQuery(
+    ['fetchOpenseaStats', { slug: splitLink.pop() }],
+    fetchOpenseaStats
+  );
 
-  useEffect(() => {
-    const fetchNFTLowestPrice = async (options) => {
-      const NFTLowestPrice = await Web3Api.token.getNFTLowestPrice(options);
-      return NFTLowestPrice;
-    };
-    const primaryContract = collectionObject
-      ? collectionObject.primary_asset_contracts[0]
-      : null;
+  let floorPrice = 0;
+  let trend = null;
 
-    if (primaryContract) {
-      const options = {
-        address: primaryContract.address,
+  if (data) {
+    floorPrice = data.floor_price;
+
+    if (data.trend && data.trend.length) {
+      const oldestLog = data.trend[0];
+
+      const changeCount = oldestLog.data.floor_price - floorPrice;
+
+      trend = {
+        logs: data.trend,
+        change: {
+          percentage: formatNumber((changeCount / floorPrice) * 100),
+          count: changeCount,
+        },
       };
-
-      setLoadingTrend(true);
-
-      fetchNFTLowestPrice(options).then((res) => {
-        const changeCount =
-          formatNumber(Moralis.Units.FromWei(res.price)) - floorPrice;
-
-        setLoadingTrend(false);
-        setTrend({
-          lastVisit: new Date(res.block_timestamp),
-          change: {
-            percentage: formatNumber((changeCount / floorPrice) * 100),
-            count: changeCount,
-          },
-        });
-      });
     }
-  }, [collectionObject]);
+  }
 
   return (
     <Paper
@@ -76,7 +66,7 @@ const FloorPriceAnalysis = ({ collectionObject }) => {
       </Tooltip>
       <Typography variant="subtitle2">floor price</Typography>
 
-      {loadingTrend ? (
+      {isLoading ? (
         <Skeleton sx={{ bgcolor: 'grey.400' }} />
       ) : (
         <Trend trend={trend} notAvailable={floorPrice === null} />
