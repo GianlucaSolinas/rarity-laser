@@ -6,7 +6,7 @@ import TwitterInfo from './stats/TwitterInfo';
 import DiscordInfo from './stats/DiscordInfo';
 import FloorPriceAnalysis from './stats/FloorPriceAnalysis';
 import HistoricalChart from './charts/HistoricalChart';
-import OwnersWrapper from './stats/TopTenOwners';
+import OwnersWrapper from './stats/TopOwnersTable';
 
 const CollectionStats = ({ collectionObject }) => {
   const hasTwitter = document.querySelector(

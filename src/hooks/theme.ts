@@ -41,6 +41,14 @@ const theme = createTheme({
           background: orange[800],
           borderRadius: '2px',
         },
+        '@keyframes blinker': {
+          from: {
+            opacity: 1,
+          },
+          to: {
+            opacity: 0,
+          },
+        },
       },
     },
     MuiTableCell: {

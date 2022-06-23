@@ -51,61 +51,65 @@ const TraitTable = ({ token }) => {
             </TableHead>
             <TableBody>
               {token.attributes
-                .sort((a, b) => b.rarity_score - a.rarity_score)
-                .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                .map((el) => {
-                  return (
-                    <TableRow key={el.trait_type}>
-                      <TableCell align="center" style={{ color: 'white' }}>
-                        <small
-                          style={{
-                            textTransform: 'uppercase',
-                            fontSize: '0.75rem',
-                            fontFamily: 'Lato',
-                            letterSpacing: '0.75px',
-                            opacity: 0.75,
-                          }}
-                        >
-                          {el.trait_type}
-                        </small>
-                        <Typography>
-                          {el.trait_value === '__missing__' ? (
-                            <em style={{ opacity: 0.7 }}>No {el.trait_type}</em>
-                          ) : (
-                            el.trait_value
-                          )}
-                        </Typography>
-                      </TableCell>
-                      <TableCell
-                        align="center"
-                        style={{
-                          color: 'white',
-                          fontWeight: 'bold',
-                        }}
-                      >
-                        {formatNumber(el.rarity_score, 'financial')}
-                      </TableCell>
-                      <TableCell
-                        align="center"
-                        style={{
-                          color: 'white',
-                          fontWeight: 'bold',
-                        }}
-                      >
-                        {`${formatNumber(
-                          // need to get back to percentage
-                          (1 / el.rarity_score) * 100,
-                          'financial'
-                        )} %`}
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
+                ? token.attributes
+                    .sort((a, b) => b.rarity_score - a.rarity_score)
+                    .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                    .map((el) => {
+                      return (
+                        <TableRow key={el.trait_type}>
+                          <TableCell align="center" style={{ color: 'white' }}>
+                            <small
+                              style={{
+                                textTransform: 'uppercase',
+                                fontSize: '0.75rem',
+                                fontFamily: 'Lato',
+                                letterSpacing: '0.75px',
+                                opacity: 0.75,
+                              }}
+                            >
+                              {el.trait_type}
+                            </small>
+                            <Typography>
+                              {el.trait_value === '__missing__' ? (
+                                <em style={{ opacity: 0.7 }}>
+                                  No {el.trait_type}
+                                </em>
+                              ) : (
+                                el.trait_value
+                              )}
+                            </Typography>
+                          </TableCell>
+                          <TableCell
+                            align="center"
+                            style={{
+                              color: 'white',
+                              fontWeight: 'bold',
+                            }}
+                          >
+                            {formatNumber(el.rarity_score, 'financial')}
+                          </TableCell>
+                          <TableCell
+                            align="center"
+                            style={{
+                              color: 'white',
+                              fontWeight: 'bold',
+                            }}
+                          >
+                            {`${formatNumber(
+                              // need to get back to percentage
+                              (1 / el.rarity_score) * 100,
+                              'financial'
+                            )} %`}
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })
+                : 'No data found.'}
             </TableBody>
           </Table>
           <TablePagination
             component="div"
-            count={token.attributes.length}
+            count={token.attributes ? token.attributes.length : 0}
             rowsPerPage={rowsPerPage}
             rowsPerPageOptions={[]}
             page={page}

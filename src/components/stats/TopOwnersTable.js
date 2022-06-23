@@ -1,10 +1,13 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import {
   Avatar,
   Box,
   Button,
   Chip,
+  CircularProgress,
   Dialog,
+  Fade,
+  keyframes,
   List,
   ListItem,
   Paper,
@@ -27,12 +30,63 @@ import {
   shortenAddress,
 } from '../../hooks/utils';
 import { formatDistanceToNow } from 'date-fns';
-import { Copyright, Verified } from '@mui/icons-material';
+import { Copyright, Refresh, Verified } from '@mui/icons-material';
 import { EthIcon, WhaleIcon } from '../../hooks/icons';
 import { useQuery } from 'react-query';
 import { fetchTopTenOwners } from '../../queries/trend';
+import ky from 'ky';
+import { RateLimit } from 'async-sema';
+import { useInView } from 'react-intersection-observer';
 
-const TopTenOwners = ({
+const openSeaPublicRateLimit = RateLimit(2);
+
+const OpenseaProfileChipLoader = ({ username, address, index }) => {
+  const { ref, inView } = useInView({ threshold: 1, delay: 2500 });
+
+  const { data: openseaProfile } = useQuery(
+    ['fetchOpenseaUser', address],
+    async () => {
+      await openSeaPublicRateLimit();
+      const data = await ky.get(`https://api.opensea.io/user/${address}`);
+      return data.json();
+    },
+    { enabled: inView }
+  );
+
+  const updatedUsername = openseaProfile?.username || username;
+
+  return (
+    <div ref={ref}>
+      <Stack alignItems="center" direction="row" gap={1}>
+        <Chip
+          variant="outlined"
+          component="a"
+          clickable
+          target="_blank"
+          href={`https://opensea.io/${openseaProfile?.username || address}`}
+          avatar={
+            <Avatar
+              alt={updatedUsername}
+              src={
+                openseaProfile ? openseaProfile.account.profile_img_url : null
+              }
+            />
+          }
+          label={<>{updatedUsername} </>}
+        ></Chip>
+        {openseaProfile ? (
+          ''
+        ) : inView ? (
+          <CircularProgress size={20} color="primary" thickness={3} />
+        ) : (
+          ''
+        )}
+      </Stack>
+    </div>
+  );
+};
+
+const TopOwnersTable = ({
   collectionData,
   onCollectionSuccess,
   contract_address,
@@ -166,26 +220,11 @@ const TopTenOwners = ({
                       </TableCell>
                       <TableCell align="left">
                         <Tooltip title="Go to profile">
-                          <Chip
-                            variant="outlined"
-                            component="a"
-                            clickable
-                            target="_blank"
-                            href={`https://opensea.io/${el.address}`}
-                            avatar={
-                              <Avatar
-                                alt={username}
-                                src={
-                                  hasOpenseaAccount
-                                    ? el.openseaAccount.account.profile_img_url
-                                    : null
-                                }
-                              />
-                            }
-                            label={username}
-                          >
-                            {username}
-                          </Chip>
+                          <OpenseaProfileChipLoader
+                            address={el.address}
+                            username={username}
+                            index={index}
+                          />
                         </Tooltip>
                       </TableCell>
                       <TableCell align="right">
@@ -261,7 +300,7 @@ const OwnersWrapper = ({ etherscanAddress, payout_address, floor_price }) => {
 
   return (
     <React.Fragment>
-      <TopTenOwners
+      <TopOwnersTable
         contract_address={contract_address}
         payout_address={payout_address}
         floor_price={floor_price}
