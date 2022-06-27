@@ -13,9 +13,7 @@ import {
   Paper,
 } from '@mui/material';
 import React, { useEffect, useState } from 'react';
-import { useMoralis, useMoralisWeb3Api } from 'react-moralis';
 import { formatNumber } from '../../hooks/utils';
-import NumbersIcon from '@mui/icons-material/Numbers';
 import { Replay } from '@mui/icons-material';
 
 const formatGwei = (n) => {
@@ -47,33 +45,37 @@ const EthGasTracker = () => {
   const [error, setError] = useState(null);
   const [currency, setCurrency] = useState('USD');
 
-  const { isInitialized } = useMoralis();
-  const Web3Api = useMoralisWeb3Api();
-
   const fetchBlockAndGas = async () => {
     setLoading(true);
     try {
-      const date = await Web3Api.native.getDateToBlock({
-        chain: 'eth',
-        date: Date.now(),
-      });
+      const ethscanblock = await (
+        await fetch(
+          `https://api.etherscan.io/api?module=proxy&action=eth_blockNumber&apikey=${'4E8HDMCZP2NJGEQBVFRUNI19A3UD67M5FZ'}`
+        )
+      ).json();
 
-      const result = await Web3Api.native.getBlock({
-        block_number_or_hash: date.block,
-      });
+      const block_number_int = parseInt(ethscanblock.result);
 
-      const { gas_limit, base_fee_per_gas, transaction_count } = result;
+      const { result } = await (
+        await fetch(
+          `https://api.etherscan.io/api?module=proxy&action=eth_getBlockByNumber&tag=${
+            ethscanblock.result
+          }&boolean=true&apikey=${'4E8HDMCZP2NJGEQBVFRUNI19A3UD67M5FZ'}`
+        )
+      ).json();
+
+      const { baseFeePerGas, transactions } = result;
 
       setBlockNumber((prev) => {
-        if (prev !== null && prev !== date.block) {
+        if (prev !== null && prev !== block_number_int) {
           setBlockNew(true);
         } else {
           setBlockNew(false);
         }
-        return date.block;
+        return block_number_int;
       });
-      setBaseFee(base_fee_per_gas);
-      setTransactions(transaction_count);
+      setBaseFee(baseFeePerGas);
+      setTransactions(transactions.length);
       setLoading(false);
     } catch (error) {
       console.error(error);
@@ -86,30 +88,28 @@ const EthGasTracker = () => {
       await fetchBlockAndGas();
     };
 
-    if (isInitialized && progress === 0) {
+    if (progress === 0) {
       getData();
     }
-  }, [isInitialized, progress]);
+  }, [progress]);
 
   useEffect(() => {
-    if (isInitialized) {
-      const progressInterval = setInterval(async () => {
-        setProgress((prev) => {
-          if (prev >= 100) {
-            return 0;
-          } else {
-            return prev + (PROGRESS_INTERVAL_TIME / INTERVAL_TIME) * 100;
-          }
-        });
-      }, PROGRESS_INTERVAL_TIME);
+    const progressInterval = setInterval(async () => {
+      setProgress((prev) => {
+        if (prev >= 100) {
+          return 0;
+        } else {
+          return prev + (PROGRESS_INTERVAL_TIME / INTERVAL_TIME) * 100;
+        }
+      });
+    }, PROGRESS_INTERVAL_TIME);
 
-      if (error) {
-        clearInterval(progressInterval);
-      }
-
-      return () => clearInterval(progressInterval);
+    if (error) {
+      clearInterval(progressInterval);
     }
-  }, [isInitialized, error]);
+
+    return () => clearInterval(progressInterval);
+  }, [error]);
 
   const REMAINING_SECONDS =
     (INTERVAL_TIME - (progress * INTERVAL_TIME) / 100) / 1000;

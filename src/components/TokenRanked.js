@@ -199,7 +199,7 @@ const TokenRanked = ({
                     {`Metadata and ranking calculation in progress.`}
                   </ListItem>
                 )}
-                {token.rank && (
+                {token.rank ? (
                   <ListItem>
                     <StarIcon
                       fontSize="small"
@@ -219,6 +219,8 @@ const TokenRanked = ({
                       'dd MMM yyyy HH:mm'
                     )})`}
                   </ListItem>
+                ) : (
+                  ''
                 )}
                 {token.last_metadata_sync && (
                   <ListItem>

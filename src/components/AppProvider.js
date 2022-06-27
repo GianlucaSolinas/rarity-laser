@@ -1,7 +1,6 @@
 import React from 'react';
 // import { UserProvider } from '../hooks/user.js';
 import EventEmitter from 'events';
-import { MoralisProvider } from 'react-moralis';
 import { CssBaseline, ThemeProvider } from '@mui/material';
 import theme from '../hooks/theme';
 import { QueryClient, QueryClientProvider } from 'react-query';
@@ -29,15 +28,8 @@ const AppProvider = ({ children }) => {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <MoralisProvider
-        serverUrl="https://matgrqe0cq1z.usemoralis.com:2053/server"
-        appId="UHCopLz11iLSe1fk4yQ81qjpU4tvaAuG5WAlHuHi"
-      >
-        {/* <UserProvider>{children}</UserProvider> */}
-        <QueryClientProvider client={queryClient}>
-          {children}
-        </QueryClientProvider>
-      </MoralisProvider>
+      {/* <UserProvider>{children}</UserProvider> */}
+      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
     </ThemeProvider>
   );
 };

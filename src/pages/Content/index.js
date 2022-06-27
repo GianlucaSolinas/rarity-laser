@@ -9,7 +9,6 @@ import {
   fetchCollectionSlug,
   // getRarityOverview,
 } from '../../hooks/utils';
-import Moralis from 'moralis';
 import CollectionStats from '../../components/CollectionStats';
 import ProfileInfo from '../../components/ProfileInfo';
 import BundleVerification from '../../components/BundleVerification';
@@ -327,11 +326,6 @@ const initialize = async () => {
   const config = await getExtensionConfig();
 
   if (config.enabled) {
-    await Moralis.start({
-      serverUrl: 'https://matgrqe0cq1z.usemoralis.com:2053/server',
-      appId: 'UHCopLz11iLSe1fk4yQ81qjpU4tvaAuG5WAlHuHi',
-    });
-
     setupInjections();
   } else {
     // console.log('REMOVE INJECTIONS');
